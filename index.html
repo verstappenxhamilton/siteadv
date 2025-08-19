@@ -3,107 +3,99 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Consultas jurídicas online com rapidez e segurança">
-  <meta name="keywords" content="advogado online, consulta jurídica, direito digital, atendimento remoto">
-  <title>Advogado Online</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <meta name="description" content="Atendimento jurídico online ágil e profissional em diversas áreas do direito">
+  <title>Dr. Silva Advocacia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="site-header">
+  <header class="top-bar">
     <div class="container">
-      <h1 class="logo">Advogado Online</h1>
-      <nav aria-label="Navegação principal">
-        <ul class="nav-list">
+      <a href="#" class="brand">Dr. Silva Advocacia</a>
+      <nav class="main-nav" aria-label="Menu principal">
+        <ul>
           <li><a href="#servicos">Serviços</a></li>
           <li><a href="#sobre">Sobre</a></li>
           <li><a href="#depoimentos">Depoimentos</a></li>
-          <li><a href="#faq">FAQ</a></li>
-          <li><a href="#contato">Contato</a></li>
+          <li><a href="#contato" class="btn-outline">Agende sua consulta</a></li>
         </ul>
       </nav>
     </div>
-    <div class="hero">
-      <div class="container">
-        <h2>Atendimento Jurídico Online</h2>
-        <p>Consultas rápidas e seguras sem sair de casa.</p>
-        <a class="cta" href="mailto:contato@advogadoonline.com">Agende sua consulta</a>
-      </div>
-    </div>
   </header>
+
+  <section class="hero">
+    <div class="container hero-grid">
+      <div class="hero-text">
+        <h1>Atendimento Jurídico Online</h1>
+        <p>Consultas e acompanhamento de processos com segurança e praticidade via videoconferência.</p>
+        <a href="#contato" class="btn-primary">Fale com um advogado</a>
+      </div>
+      <img src="https://images.unsplash.com/photo-1555371364-38dd0fb4b8f0?auto=format&fit=crop&w=800&q=60" alt="Advogado em reunião virtual">
+    </div>
+  </section>
 
   <main>
     <section id="servicos" class="services">
       <div class="container">
-        <h2>Serviços</h2>
-        <div class="cards">
-          <div class="card">
-            <span class="material-symbols-outlined icon" aria-hidden="true">videocam</span>
-            <h3>Consultoria Virtual</h3>
-            <p>Orientação jurídica por videoconferência.</p>
-          </div>
-          <div class="card">
-            <span class="material-symbols-outlined icon" aria-hidden="true">description</span>
-            <h3>Análise de Documentos</h3>
-            <p>Revisão e elaboração de contratos à distância.</p>
-          </div>
-          <div class="card">
-            <span class="material-symbols-outlined icon" aria-hidden="true">gavel</span>
-            <h3>Processos Digitais</h3>
-            <p>Suporte completo em processos eletrônicos.</p>
-          </div>
+        <h2>Principais Serviços</h2>
+        <div class="card-grid">
+          <article class="card">
+            <span class="material-symbols-outlined" aria-hidden="true">gavel</span>
+            <h3>Consultoria Jurídica</h3>
+            <p>Orientação especializada para decisões assertivas.</p>
+          </article>
+          <article class="card">
+            <span class="material-symbols-outlined" aria-hidden="true">description</span>
+            <h3>Elaboração de Contratos</h3>
+            <p>Contratos personalizados e revisados remotamente.</p>
+          </article>
+          <article class="card">
+            <span class="material-symbols-outlined" aria-hidden="true">groups</span>
+            <h3>Mediação Online</h3>
+            <p>Resolução de conflitos com agilidade e confidencialidade.</p>
+          </article>
         </div>
       </div>
     </section>
 
     <section id="sobre" class="about">
-      <div class="container">
-        <div class="about-grid">
-          <img src="https://via.placeholder.com/400x300" alt="Foto do advogado">
-          <div>
-            <h2>Sobre mim</h2>
-            <p>Sou um advogado com experiência em direito civil e trabalhista, focado em atender clientes de forma totalmente online, com praticidade e confidencialidade.</p>
-          </div>
+      <div class="container about-grid">
+        <img src="https://images.unsplash.com/photo-1603575448362-8a25948f5df4?auto=format&fit=crop&w=800&q=60" alt="Foto do advogado">
+        <div>
+          <h2>Sobre o Profissional</h2>
+          <p>Mais de 10 anos de experiência em direito civil e digital, com foco em soluções eficientes para clientes em todo o Brasil.</p>
+          <p>Atendimento 100% online, garantindo praticidade e sigilo profissional.</p>
         </div>
       </div>
     </section>
 
     <section id="depoimentos" class="testimonials">
       <div class="container">
-        <h2>Depoimentos</h2>
-        <div class="testimonial-list">
-          <figure class="testimonial">
-            <blockquote>“O atendimento foi rápido e eficiente. Resolvi meu problema sem sair de casa!”</blockquote>
-            <figcaption>— Maria S.</figcaption>
+        <h2>O que dizem os clientes</h2>
+        <div class="testimonial-grid">
+          <figure>
+            <blockquote>“Recebi orientação precisa e rápida. Excelente serviço!”</blockquote>
+            <figcaption>— Ana Pereira</figcaption>
           </figure>
-          <figure class="testimonial">
-            <blockquote>“Profissional atencioso e competente. Recomendo!”</blockquote>
-            <figcaption>— João P.</figcaption>
+          <figure>
+            <blockquote>“Profissional competente, resolveu meu caso com agilidade.”</blockquote>
+            <figcaption>— Marcos Lima</figcaption>
           </figure>
         </div>
       </div>
     </section>
 
-    <section id="faq" class="faq">
-      <div class="container">
-        <h2>Perguntas Frequentes</h2>
-        <details>
-          <summary>Como funciona o atendimento online?</summary>
-          <p>Após o agendamento, a consulta ocorre por videoconferência em horário combinado.</p>
-        </details>
-        <details>
-          <summary>Quais documentos preciso enviar?</summary>
-          <p>Você pode anexar documentos digitalizados ao formulário de contato ou enviá-los por e-mail.</p>
-        </details>
-      </div>
-    </section>
-
     <section id="contato" class="contact">
-      <div class="container">
-        <h2>Contato</h2>
+      <div class="container contact-grid">
+        <div>
+          <h2>Entre em Contato</h2>
+          <p>Envie sua mensagem e retornarei em até 24h úteis.</p>
+          <ul class="contact-info">
+            <li><span class="material-symbols-outlined" aria-hidden="true">mail</span> contato@advogadoonline.com</li>
+            <li><span class="material-symbols-outlined" aria-hidden="true">call</span> (11) 0000-0000</li>
+          </ul>
+        </div>
         <form action="mailto:contato@advogadoonline.com" method="post" enctype="text/plain">
           <label for="nome">Nome</label>
           <input type="text" id="nome" name="nome" required>
@@ -114,15 +106,15 @@
           <label for="mensagem">Mensagem</label>
           <textarea id="mensagem" name="mensagem" rows="5" required></textarea>
 
-          <button type="submit">Enviar</button>
+          <button type="submit" class="btn-primary">Enviar</button>
         </form>
       </div>
     </section>
   </main>
 
-  <footer class="site-footer">
+  <footer class="footer">
     <div class="container">
-      <p>© 2024 Advogado Online. Todos os direitos reservados.</p>
+      <p>&copy; 2024 Dr. Silva Advocacia. Todos os direitos reservados.</p>
     </div>
   </footer>
 </body>
