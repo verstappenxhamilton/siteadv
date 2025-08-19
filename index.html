@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Consultoria jurídica online de forma prática, segura e profissional.">
+  <title>Advogado Online</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="navbar">
+    <div class="container">
+      <h1 class="brand">Advogado Online</h1>
+      <nav aria-label="menu principal">
+        <ul class="nav-links">
+          <li><a href="#servicos">Serviços</a></li>
+          <li><a href="#sobre">Sobre</a></li>
+          <li><a href="#depoimentos">Depoimentos</a></li>
+          <li><a href="#faq">FAQ</a></li>
+          <li><a class="btn-nav" href="#contato">Agendar</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container">
+      <h2>Atendimento Jurídico 100% Online</h2>
+      <p>Orientação especializada sem sair de casa.</p>
+      <a class="btn-primary" href="#contato">Fale agora</a>
+    </div>
+  </section>
+
+  <main>
+    <section id="servicos" class="services">
+      <div class="container">
+        <h2>Serviços</h2>
+        <div class="service-grid">
+          <div class="service-card">
+            <span class="material-symbols-outlined" aria-hidden="true">videocam</span>
+            <h3>Consultas por vídeo</h3>
+            <p>Atendimento personalizado por chamada de vídeo segura.</p>
+          </div>
+          <div class="service-card">
+            <span class="material-symbols-outlined" aria-hidden="true">description</span>
+            <h3>Revisão de documentos</h3>
+            <p>Análise e elaboração de contratos sem deslocamento.</p>
+          </div>
+          <div class="service-card">
+            <span class="material-symbols-outlined" aria-hidden="true">gavel</span>
+            <h3>Processos digitais</h3>
+            <p>Protocolo e acompanhamento de ações totalmente online.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="sobre" class="about">
+      <div class="container about-flex">
+        <img src="https://via.placeholder.com/450x300" alt="Foto do advogado">
+        <div>
+          <h2>Sobre</h2>
+          <p>Advogado especializado em direito civil e trabalhista, disponibilizando consultoria integralmente online para clientes em qualquer lugar do Brasil.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="depoimentos" class="testimonials">
+      <div class="container">
+        <h2>Depoimentos</h2>
+        <div class="testimonial-grid">
+          <blockquote class="testimonial">
+            <p>“Resolvi minha demanda rapidamente e sem burocracia. Excelente profissional!”</p>
+            <cite>— Ana P.</cite>
+          </blockquote>
+          <blockquote class="testimonial">
+            <p>“Atendimento atencioso e 100% digital. Recomendo para todos!”</p>
+            <cite>— Carlos M.</cite>
+          </blockquote>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq" class="faq">
+      <div class="container">
+        <h2>Perguntas frequentes</h2>
+        <details>
+          <summary>Como agendo uma consulta?</summary>
+          <p>Basta enviar uma mensagem pelo formulário ou e‑mail informando sua necessidade.</p>
+        </details>
+        <details>
+          <summary>O atendimento é sigiloso?</summary>
+          <p>Sim, todas as consultas são realizadas em ambiente seguro e confidencial.</p>
+        </details>
+      </div>
+    </section>
+
+    <section id="contato" class="contact">
+      <div class="container">
+        <h2>Fale comigo</h2>
+        <form action="mailto:contato@advogadoonline.com" method="post" enctype="text/plain">
+          <label for="nome">Nome</label>
+          <input id="nome" name="nome" type="text" required>
+
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" required>
+
+          <label for="mensagem">Mensagem</label>
+          <textarea id="mensagem" name="mensagem" rows="5" required></textarea>
+
+          <button type="submit">Enviar</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>© 2024 Advogado Online. Todos os direitos reservados.</p>
+    </div>
+  </footer>
+</body>
+</html>
