@@ -255,6 +255,22 @@ button.danger { background: #ef4444; color: white; }
   margin-bottom: 8px;
 }
 
+.chat-messages .msg {
+  margin-bottom: 4px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  white-space: pre-wrap;
+}
+
+.chat-messages .msg.user {
+  background: #1e293b;
+  text-align: right;
+}
+
+.chat-messages .msg.assistant {
+  background: #334155;
+}
+
 .chat-input {
   display: flex;
   gap: 8px;
@@ -270,6 +286,17 @@ button.danger { background: #ef4444; color: white; }
 }
 
 .chat-input button { flex-shrink: 0; }
+
+.quick-replies {
+  display: flex;
+  gap: 6px;
+  margin: 4px 0 12px;
+}
+
+.quick-replies button {
+  padding: 4px 8px;
+  font-size: 0.875rem;
+}
 
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; }
@@ -428,4 +455,21 @@ body { scroll-behavior: smooth; }
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+.triage-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.triage-form .field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.triage-form button {
+  align-self: flex-end;
 }
