@@ -44,18 +44,19 @@ const adminConfig = {
   provider: 'openai',
   parameters: {
     model: 'gpt-4o-mini',
-    max_output_tokens: 500,
+    max_output_tokens: 200,
     temperature: 0.7,
     top_p: 1,
     stop_sequences: []
   },
-  prompt: 'Você é uma secretária jurídica especialista. Conduza a triagem em blocos e responda em português.',
+    prompt: 'Você é um advogado virtual. Converse em poucas palavras e em português. Pergunte qual é o problema do cliente e quais documentos possui. Se o tema for usucapião, questione se prefere via extrajudicial ou judicial e se deseja saber os custos de ambas, pesquisando nas tabelas de custas do TJMG. Quando tiver informações suficientes, encerre cordialmente e produza um relatório. Responda sempre em JSON como {"reply":"texto","done":bool,"report":"resumo"} e só inclua report quando done for true.',
   limits: { maxMessages: 20, maxChars: 1000 },
   features: { upload: false, ocr: false },
   apiKeys: {
     openai: process.env.OPENAI_API_KEY || '',
     anthropic: process.env.ANTHROPIC_API_KEY || '',
-    groq: process.env.GROQ_API_KEY || ''
+    groq: process.env.GROQ_API_KEY || '',
+    gemini: process.env.GEMINI_API_KEY || ''
   }
 };
 
@@ -89,21 +90,30 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
   session.count++;
   session.messages.push({ role: 'user', content: message });
   sessions[sessionId] = session;
+  const apiKey = adminConfig.apiKeys[adminConfig.provider];
+  if (!apiKey) {
+    return res.status(400).json({ error: 'missing_api_key' });
+  }
   try {
-    const aiMessages = [{ role: 'system', content: adminConfig.prompt }, ...session.messages];
-    const reply = await generate(adminConfig.provider, adminConfig.apiKeys[adminConfig.provider], aiMessages, adminConfig.parameters);
-    session.messages.push({ role: 'assistant', content: reply });
-    res.json({ reply });
+  const aiMessages = [{ role: 'system', content: adminConfig.prompt }, ...session.messages];
+  const raw = await generate(adminConfig.provider, apiKey, aiMessages, adminConfig.parameters);
+  session.messages.push({ role: 'assistant', content: raw });
+  let payload;
+  try {
+    payload = JSON.parse(raw);
+  } catch {
+    payload = { reply: raw };
+  }
+  if (payload.report) session.report = payload.report;
+  res.json(payload);
   } catch (e) {
     console.error(e);
-    res.status(500).json({ error: 'provider_error' });
+    res.status(500).json({ error: 'provider_error', message: e.message });
   }
 });
 
-const adminKey = process.env.ADMIN_KEY || 'secret';
-
 const configSchema = z.object({
-  provider: z.enum(['openai', 'anthropic', 'groq']).optional(),
+  provider: z.enum(['openai', 'anthropic', 'groq', 'gemini']).optional(),
   parameters: z.object({
     model: z.string().optional(),
     max_output_tokens: z.number().optional(),
@@ -119,12 +129,8 @@ const configSchema = z.object({
 const keySchema = z.object({
   openai: z.string().optional(),
   anthropic: z.string().optional(),
-  groq: z.string().optional()
-});
-
-app.use('/admin', (req, res, next) => {
-  if (req.headers['x-admin-key'] !== adminKey) return res.sendStatus(401);
-  next();
+  groq: z.string().optional(),
+  gemini: z.string().optional()
 });
 
 app.get('/admin/config', (req, res) => {
