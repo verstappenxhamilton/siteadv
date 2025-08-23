@@ -47,6 +47,32 @@
         <button id="sendBtn" class="primary" disabled>Enviar</button>
       </div>
     </div>
+    <div class="panel" style="margin-top:14px;" id="aiConfigPanel">
+      <h3 style="margin-top:0;">Configuração da IA</h3>
+      <form id="aiConfigForm">
+        <label>Chave Admin
+          <input type="password" id="adminKey" required />
+        </label>
+        <label>Provedor
+          <select name="provider">
+            <option value="openai">OpenAI</option>
+            <option value="anthropic">Anthropic</option>
+            <option value="groq">Groq</option>
+          </select>
+        </label>
+        <label>Modelo<input type="text" name="model" /></label>
+        <label>Max tokens<input type="number" name="max_output_tokens" /></label>
+        <label>Temperatura<input type="number" step="0.1" name="temperature" /></label>
+        <label>Prompt<textarea name="prompt" rows="3"></textarea></label>
+        <button type="submit" class="primary">Salvar Configuração</button>
+      </form>
+      <form id="aiKeyForm" style="margin-top:12px;">
+        <label>OpenAI<input type="password" name="openai" /></label>
+        <label>Anthropic<input type="password" name="anthropic" /></label>
+        <label>Groq<input type="password" name="groq" /></label>
+        <button type="submit" class="secondary">Salvar Chaves</button>
+      </form>
+    </div>
   </div>
 
   <div class="incoming" id="incoming">

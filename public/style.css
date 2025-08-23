@@ -255,6 +255,39 @@ button.danger { background: #ef4444; color: white; }
   margin-bottom: 8px;
 }
 
+.chat-messages .msg {
+  margin-bottom: 4px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  white-space: pre-wrap;
+}
+
+.chat-messages .msg.user {
+  background: #1e293b;
+  text-align: right;
+}
+
+.chat-messages .msg.assistant {
+  background: #334155;
+}
+
+.quick-replies {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.quick-replies button {
+  background: transparent;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
 .chat-input {
   display: flex;
   gap: 8px;
@@ -428,4 +461,21 @@ body { scroll-behavior: smooth; }
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+.triage-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.triage-form .field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.triage-form button {
+  align-self: flex-end;
 }

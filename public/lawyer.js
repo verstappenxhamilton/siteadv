@@ -173,4 +173,49 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   if (isPotentiallyInsecureContext()) {
     setInfo('Aviso: contexto inseguro pode bloquear câmera/microfone. Use localhost ou HTTPS.');
   }
+
+  // Configuração da IA
+  const aiConfigForm = document.getElementById('aiConfigForm');
+  const aiKeyForm = document.getElementById('aiKeyForm');
+  const adminKeyInput = document.getElementById('adminKey');
+
+  async function adminPost(path, data) {
+    const key = adminKeyInput.value.trim();
+    if (!key) { alert('Informe a chave admin'); return; }
+    await fetch(path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-key': key },
+      body: JSON.stringify(data)
+    });
+  }
+
+  if (aiConfigForm) {
+    aiConfigForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const fd = new FormData(aiConfigForm);
+      const data = {
+        provider: fd.get('provider'),
+        parameters: {
+          model: fd.get('model') || undefined,
+          max_output_tokens: Number(fd.get('max_output_tokens')) || undefined,
+          temperature: Number(fd.get('temperature')) || undefined
+        },
+        prompt: fd.get('prompt')
+      };
+      adminPost('/admin/config', data).then(() => alert('Configuração salva'));
+    });
+  }
+
+  if (aiKeyForm) {
+    aiKeyForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const fd = new FormData(aiKeyForm);
+      const data = {
+        openai: fd.get('openai'),
+        anthropic: fd.get('anthropic'),
+        groq: fd.get('groq')
+      };
+      adminPost('/admin/keys', data).then(() => alert('Chaves salvas'));
+    });
+  }
 })();
