@@ -6,6 +6,7 @@ const path = require('path');
 const { Server } = require('socket.io');
 
 const app = express();
+app.use(express.json());
 
 // Detectar certificados locais para HTTPS
 let server;
@@ -63,7 +64,7 @@ io.on('connection', (socket) => {
   });
 
   // Cliente pede para iniciar uma chamada
-  socket.on('request-call', () => {
+  socket.on('request-call', ({ mode } = {}) => {
     if (!lawyerSocket) {
       socket.emit('call-unavailable', { reason: 'offline' });
       return;
@@ -74,7 +75,7 @@ io.on('connection', (socket) => {
     }
     busyWithClientId = socket.id;
     broadcastLawyerStatus();
-    lawyerSocket.emit('incoming-call', { clientId: socket.id });
+    lawyerSocket.emit('incoming-call', { clientId: socket.id, mode });
   });
 
   // Advogado aceita a chamada
@@ -114,6 +115,16 @@ io.on('connection', (socket) => {
     if (targetId && candidate) io.to(targetId).emit('webrtc-ice-candidate', { from: socket.id, candidate });
   });
 
+  // Chat texto simples
+  socket.on('chat-from-client', ({ message }) => {
+    if (lawyerSocket && message) {
+      lawyerSocket.emit('chat-from-client', { clientId: socket.id, message });
+    }
+  });
+  socket.on('chat-from-lawyer', ({ clientId, message }) => {
+    if (clientId && message) io.to(clientId).emit('chat-from-lawyer', { message });
+  });
+
   socket.on('disconnect', () => {
     // Se o advogado desconectar
     if (lawyerSocket && socket.id === lawyerSocket.id) {
@@ -133,6 +144,12 @@ io.on('connection', (socket) => {
       broadcastLawyerStatus();
     }
   });
+});
+
+// Endpoint simples para formulário de contato
+app.post('/contact', (req, res) => {
+  console.log('Contato recebido:', req.body);
+  res.json({ ok: true });
 });
 
 const PORT = process.env.PORT || 3000;
