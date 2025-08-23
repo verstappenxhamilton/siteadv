@@ -16,17 +16,27 @@ async function send() {
   if (!message) return;
   append('user', message);
   inputEl.value = '';
-  try {
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId, message })
-    });
-    const data = await res.json();
-    append('assistant', data.reply || '[erro]');
-  } catch (e) {
-    append('assistant', '[erro de rede]');
-  }
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, message })
+      });
+      const data = await res.json();
+      const map = {
+        missing_api_key: 'Chave de API ausente.',
+        limit_reached: 'Limite de uso atingido.',
+        msg_too_long: 'Mensagem muito longa.',
+        session_closed: 'Sessão encerrada.'
+      };
+      if (!res.ok) {
+        append('assistant', '[erro] ' + (map[data.error] || data.message || data.error));
+        return;
+      }
+      append('assistant', data.reply || '[erro]');
+    } catch (e) {
+      append('assistant', '[erro de rede]');
+    }
 }
 
 sendBtn.addEventListener('click', send);
