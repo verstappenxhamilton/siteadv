@@ -11,6 +11,9 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   const messages = document.getElementById('messages');
   const chatInput = document.getElementById('chatInput');
   const sendBtn = document.getElementById('sendBtn');
+  const aiMessages = document.getElementById('aiMessages');
+  const aiInput = document.getElementById('aiInput');
+  const aiSendBtn = document.getElementById('aiSendBtn');
 
   const socket = io();
   socket.emit('identify', { role: 'lawyer' });
@@ -20,6 +23,51 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   let currentClientId = null;
   let pendingMode = 'video';
   let currentChatClientId = null;
+
+  const configForm = document.getElementById('configForm');
+  const keyForm = document.getElementById('keyForm');
+
+  async function postAdmin(path, data) {
+    const key = prompt('Chave admin?');
+    await fetch(path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-key': key },
+      body: JSON.stringify(data)
+    });
+  }
+
+  if (configForm) {
+    configForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(configForm);
+      const data = {
+        provider: fd.get('provider'),
+        parameters: {
+          max_output_tokens: Number(fd.get('max_output_tokens')),
+          temperature: Number(fd.get('temperature')),
+          top_p: Number(fd.get('top_p'))
+        },
+        prompt: fd.get('prompt')
+      };
+      await postAdmin('/admin/config', data);
+      alert('Configuração salva');
+    });
+  }
+
+  if (keyForm) {
+    keyForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(keyForm);
+      const data = {
+        openai: fd.get('openai'),
+        anthropic: fd.get('anthropic'),
+        groq: fd.get('groq'),
+        gemini: fd.get('gemini')
+      };
+      await postAdmin('/admin/keys', data);
+      alert('Chaves salvas');
+    });
+  }
 
   function setInfo(text) { info.textContent = text; }
 
@@ -65,17 +113,18 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   });
 
   // Chat
-  function appendMessage(sender, text) {
+  function appendMessage(container, role, text) {
     const div = document.createElement('div');
-    div.textContent = `${sender}: ${text}`;
-    messages.appendChild(div);
-    messages.scrollTop = messages.scrollHeight;
+    div.className = `msg ${role}`;
+    div.textContent = text;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
   }
 
   function sendChat() {
     const msg = chatInput.value.trim();
     if (!msg || !currentChatClientId) return;
-    appendMessage('Você', msg);
+    appendMessage(messages, 'you', `Você: ${msg}`);
     socket.emit('chat-message', { targetId: currentChatClientId, message: msg });
     chatInput.value = '';
   }
@@ -85,10 +134,34 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
     if (e.key === 'Enter') { e.preventDefault(); sendChat(); }
   });
 
+  async function askAi(sessionId, msg) {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId, message: msg })
+    });
+    return res.json();
+  }
+
   socket.on('chat-message', ({ from, message }) => {
     currentChatClientId = from;
-    appendMessage('Cliente', message);
+    appendMessage(messages, 'client', `Cliente: ${message}`);
     sendBtn.disabled = false;
+    askAi(from, message).then(data => {
+      if (data.reply) {
+        appendMessage(aiMessages, 'ai', `Sugestão: ${data.reply}`);
+      } else if (data.error) {
+        const map = {
+          missing_api_key: 'Chave de API ausente.',
+          limit_reached: 'Limite de uso atingido.',
+          msg_too_long: 'Mensagem muito longa.'
+        };
+        appendMessage(aiMessages, 'error', `Erro IA: ${map[data.error] || data.message || data.error}`);
+      }
+    }).catch(e => {
+      console.error('AI error', e);
+      appendMessage(aiMessages, 'error', 'Erro IA inesperado.');
+    });
   });
 
   socket.on('webrtc-offer', async ({ from, sdp }) => {
@@ -172,5 +245,41 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   // Aviso de contexto inseguro
   if (isPotentiallyInsecureContext()) {
     setInfo('Aviso: contexto inseguro pode bloquear câmera/microfone. Use localhost ou HTTPS.');
+  }
+
+  document.querySelectorAll('.quick-reply').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const msg = btn.dataset.msg;
+      if (!msg || !currentChatClientId) return;
+      appendMessage(messages, 'you', `Você: ${msg}`);
+      socket.emit('chat-message', { targetId: currentChatClientId, message: msg });
+    });
+  });
+
+  function sendAi() {
+    const msg = aiInput.value.trim();
+    if (!msg) return;
+    appendMessage(aiMessages, 'you', `Você: ${msg}`);
+    aiInput.value = '';
+    askAi('lawyer-assistant', msg).then(data => {
+      if (data.reply) {
+        appendMessage(aiMessages, 'ai', `IA: ${data.reply}`);
+      } else if (data.error) {
+        const map = {
+          missing_api_key: 'Chave de API ausente.',
+          limit_reached: 'Limite de uso atingido.',
+          msg_too_long: 'Mensagem muito longa.'
+        };
+        appendMessage(aiMessages, 'error', `Erro IA: ${map[data.error] || data.message || data.error}`);
+      }
+    }).catch(e => {
+      console.error('AI error', e);
+      appendMessage(aiMessages, 'error', 'Erro IA inesperado.');
+    });
+  }
+
+  if (aiSendBtn) {
+    aiSendBtn.addEventListener('click', sendAi);
+    aiInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendAi(); } });
   }
 })();
