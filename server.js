@@ -4,6 +4,10 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const { Server } = require('socket.io');
+const rateLimit = require('express-rate-limit');
+const { getConfig, updateConfig } = require('./config');
+const { generate } = require('./providers');
+const { triageSchema } = require('./triage-schema');
 
 const app = express();
 
@@ -36,11 +40,49 @@ const io = new Server(server, {
 app.use(express.static('public'));
 app.use(express.json());
 
+const chatLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20
+});
+
 // Endpoint simples para formulário de contato
 app.post('/contact', (req, res) => {
   const { nome, email, mensagem } = req.body || {};
   console.log('Contato recebido:', nome, email, mensagem);
   res.sendStatus(200);
+});
+
+app.get('/api/admin/config', (req, res) => {
+  res.json(getConfig());
+});
+
+app.post('/api/admin/config', (req, res) => {
+  const cfg = { ...getConfig(), ...req.body };
+  updateConfig(cfg);
+  res.json({ ok: true });
+});
+
+app.post('/api/chat', chatLimiter, async (req, res) => {
+  const { messages, formData, complete } = req.body || {};
+  const cfg = getConfig();
+  try {
+    if (complete) {
+      const parsed = triageSchema.safeParse(formData);
+      if (!parsed.success) {
+        return res.status(400).json({ error: 'Dados incompletos', issues: parsed.error.issues });
+      }
+      const resumo = [
+        `Nome: ${formData.nome}`,
+        `Caso: ${formData.descricaoCaso}`
+      ];
+      const pendencias = [];
+      return res.json({ done: true, resumo, pendencias, data: formData });
+    }
+    const response = await generate(cfg.provider, cfg, messages);
+    res.json(response);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 let lawyerSocket = null; // socket do advogado

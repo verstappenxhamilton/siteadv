@@ -4,13 +4,17 @@
   "description": "Site de advogado com chamada de vídeo (WebRTC) e presença online",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "echo 'build step'",
+    "test": "echo 'no tests specified'"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
     "express": "^4.19.2",
-    "socket.io": "^4.7.5"
+    "socket.io": "^4.7.5",
+    "express-rate-limit": "^6.7.0",
+    "zod": "^3.22.4"
   }
 }
 

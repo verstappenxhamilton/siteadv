@@ -1,0 +1,12 @@
+{
+  "provider": "openai",
+  "openai": {"apiKey": ""},
+  "anthropic": {"apiKey": ""},
+  "groq": {"apiKey": ""},
+  "params": {
+    "max_output_tokens": 500,
+    "temperature": 0.7,
+    "top_p": 1,
+    "stop_sequences": []
+  }
+}

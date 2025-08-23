@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <title>Painel Admin</title>
+</head>
+<body>
+  <h1>Configuração de IA</h1>
+  <form id="configForm">
+    <label>Provedor:
+      <select id="provider">
+        <option value="openai">OpenAI</option>
+        <option value="anthropic">Anthropic</option>
+        <option value="groq">Groq</option>
+      </select>
+    </label><br/>
+    <label>API Key:
+      <input type="password" id="apiKey" />
+    </label><br/>
+    <label>Max Tokens:
+      <input type="number" id="maxTokens" />
+    </label><br/>
+    <label>Temperature:
+      <input type="number" step="0.1" id="temperature" />
+    </label><br/>
+    <button type="submit">Salvar</button>
+  </form>
+  <script type="module" src="/admin.js"></script>
+</body>
+</html>
