@@ -135,6 +135,65 @@ h2::after {
   flex-wrap: wrap;
 }
 
+.quick-replies {
+  margin-bottom: 8px;
+}
+.quick-replies button {
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+.form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.form-grid label {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}
+.form-grid input,
+.form-grid select,
+.form-grid textarea {
+  margin-top: 4px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: #0b1224;
+  color: var(--text);
+}
+
+.provider-options {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.provider-option {
+  background: #1f2937;
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.provider-option input { margin: 0; }
+
+.provider-field { display: flex; flex-direction: column; gap: 4px; }
+.provider-field span { font-size: 14px; }
+
+.reports-list {
+  list-style: disc;
+  padding-left: 20px;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 8px;
+}
+
+.reports-list li { margin-bottom: 6px; }
+
 button.primary {
     background: linear-gradient(90deg, #22c55e, #16a34a);
     color: #052e16;
@@ -267,8 +326,43 @@ button.danger { background: #ef4444; color: white; }
   text-align: right;
 }
 
-.chat-messages .msg.assistant {
+.chat-messages .msg.you {
+  background: #1e293b;
+  text-align: right;
+}
+
+.chat-messages .msg.client {
   background: #334155;
+}
+
+.chat-messages .msg.ai {
+  background: #334155;
+  border-left: 2px solid var(--accent);
+  font-style: italic;
+}
+
+.chat-messages .msg.error {
+  background: #7f1d1d;
+  color: #fecaca;
+  text-align: center;
+}
+
+.chat-followup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.chat-followup input {
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid #475569;
+}
+
+.chat-followup button {
+  align-self: flex-end;
+  padding: 6px 12px;
 }
 
 .chat-input {
@@ -286,6 +380,10 @@ button.danger { background: #ef4444; color: white; }
 }
 
 .chat-input button { flex-shrink: 0; }
+
+.key-field {
+  display: none;
+}
 
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; }
