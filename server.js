@@ -44,18 +44,19 @@ const adminConfig = {
   provider: 'openai',
   parameters: {
     model: 'gpt-4o-mini',
-    max_output_tokens: 500,
+    max_output_tokens: 200,
     temperature: 0.7,
     top_p: 1,
     stop_sequences: []
   },
-  prompt: 'Você é uma secretária jurídica especialista. Conduza a triagem em blocos e responda em português.',
+  prompt: 'Você é um advogado profissional. Responda de forma curta, clara e educada em português.',
   limits: { maxMessages: 20, maxChars: 1000 },
   features: { upload: false, ocr: false },
   apiKeys: {
     openai: process.env.OPENAI_API_KEY || '',
     anthropic: process.env.ANTHROPIC_API_KEY || '',
-    groq: process.env.GROQ_API_KEY || ''
+    groq: process.env.GROQ_API_KEY || '',
+    gemini: process.env.GEMINI_API_KEY || ''
   }
 };
 
@@ -86,24 +87,28 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
   if (session.count >= adminConfig.limits.maxMessages) {
     return res.status(400).json({ error: 'limit_reached' });
   }
+  const apiKey = adminConfig.apiKeys[adminConfig.provider];
+  if (!apiKey) {
+    return res.status(400).json({ error: 'missing_api_key' });
+  }
   session.count++;
   session.messages.push({ role: 'user', content: message });
   sessions[sessionId] = session;
   try {
     const aiMessages = [{ role: 'system', content: adminConfig.prompt }, ...session.messages];
-    const reply = await generate(adminConfig.provider, adminConfig.apiKeys[adminConfig.provider], aiMessages, adminConfig.parameters);
+    const reply = await generate(adminConfig.provider, apiKey, aiMessages, adminConfig.parameters);
     session.messages.push({ role: 'assistant', content: reply });
     res.json({ reply });
   } catch (e) {
     console.error(e);
-    res.status(500).json({ error: 'provider_error' });
+    res.status(500).json({ error: e.message || 'provider_error' });
   }
 });
 
 const adminKey = process.env.ADMIN_KEY || 'secret';
 
 const configSchema = z.object({
-  provider: z.enum(['openai', 'anthropic', 'groq']).optional(),
+  provider: z.enum(['openai', 'anthropic', 'groq', 'gemini']).optional(),
   parameters: z.object({
     model: z.string().optional(),
     max_output_tokens: z.number().optional(),
@@ -119,7 +124,8 @@ const configSchema = z.object({
 const keySchema = z.object({
   openai: z.string().optional(),
   anthropic: z.string().optional(),
-  groq: z.string().optional()
+  groq: z.string().optional(),
+  gemini: z.string().optional()
 });
 
 app.use('/admin', (req, res, next) => {

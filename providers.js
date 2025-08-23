@@ -17,6 +17,9 @@ async function openaiGenerate(apiKey, messages, params) {
     })
   });
   const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error && data.error.message || JSON.stringify(data));
+  }
   if (data.output && data.output.length) {
     return data.output[0].content[0].text;
   }
@@ -41,6 +44,9 @@ async function anthropicGenerate(apiKey, messages, params) {
     })
   });
   const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error && data.error.message || JSON.stringify(data));
+  }
   if (data.content && data.content.length) {
     return data.content[0].text;
   }
@@ -64,8 +70,40 @@ async function groqGenerate(apiKey, messages, params) {
     })
   });
   const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error && data.error.message || JSON.stringify(data));
+  }
   if (data.choices && data.choices.length) {
     return data.choices[0].message.content;
+  }
+  return '';
+}
+
+async function geminiGenerate(apiKey, messages, params) {
+  const url = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`;
+  const contents = messages.map(m => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: m.content }]
+  }));
+  const body = { contents };
+  const generationConfig = {};
+  if (params.max_output_tokens !== undefined) generationConfig.maxOutputTokens = params.max_output_tokens;
+  if (params.temperature !== undefined) generationConfig.temperature = params.temperature;
+  if (params.top_p !== undefined) generationConfig.topP = params.top_p;
+  if (params.stop_sequences) generationConfig.stopSequences = params.stop_sequences;
+  if (Object.keys(generationConfig).length) body.generationConfig = generationConfig;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error && data.error.message || JSON.stringify(data));
+  }
+  if (data.candidates && data.candidates.length) {
+    const parts = data.candidates[0].content && data.candidates[0].content.parts;
+    if (parts && parts.length) return parts[0].text || '';
   }
   return '';
 }
@@ -76,6 +114,8 @@ async function generate(provider, apiKey, messages, params) {
       return anthropicGenerate(apiKey, messages, params);
     case 'groq':
       return groqGenerate(apiKey, messages, params);
+    case 'gemini':
+      return geminiGenerate(apiKey, messages, params);
     case 'openai':
     default:
       return openaiGenerate(apiKey, messages, params);

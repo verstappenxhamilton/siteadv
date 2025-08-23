@@ -135,6 +135,14 @@ h2::after {
   flex-wrap: wrap;
 }
 
+.quick-replies { 
+  margin-bottom: 8px; 
+} 
+.quick-replies button { 
+  padding: 6px 8px; 
+  font-size: 12px; 
+} 
+
 button.primary {
     background: linear-gradient(90deg, #22c55e, #16a34a);
     color: #052e16;
@@ -255,26 +263,44 @@ button.danger { background: #ef4444; color: white; }
   margin-bottom: 8px;
 }
 
-.chat-messages .msg {
-  margin-bottom: 4px;
-  padding: 6px 8px;
-  border-radius: 6px;
-  white-space: pre-wrap;
-}
+.chat-messages .msg { 
+  margin-bottom: 4px; 
+  padding: 6px 8px; 
+  border-radius: 6px; 
+  white-space: pre-wrap; 
+} 
 
-.chat-messages .msg.user {
-  background: #1e293b;
-  text-align: right;
-}
+.chat-messages .msg.user { 
+  background: #1e293b; 
+  text-align: right; 
+} 
 
-.chat-messages .msg.assistant {
-  background: #334155;
-}
+.chat-messages .msg.assistant { 
+  background: #334155; 
+} 
 
-.chat-input {
-  display: flex;
-  gap: 8px;
-}
+.chat-messages .msg.lawyer { 
+  background: #1e293b; 
+  text-align: right; 
+} 
+
+.chat-messages .msg.client { 
+  background: #334155; 
+} 
+
+.chat-messages .msg.ai { 
+  background: #475569; 
+  font-style: italic; 
+} 
+
+.chat-messages .msg.error { 
+  background: #7f1d1d; 
+} 
+
+.chat-input { 
+  display: flex; 
+  gap: 8px; 
+} 
 
 .chat-input input {
   flex: 1;
@@ -285,7 +311,27 @@ button.danger { background: #ef4444; color: white; }
   color: var(--text);
 }
 
-.chat-input button { flex-shrink: 0; }
+.chat-input button { flex-shrink: 0; } 
+
+#configForm label,
+#keyForm label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+}
+
+#configForm select,
+#configForm input,
+#configForm textarea,
+#keyForm input {
+  margin-top: 2px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: #0b1224;
+  color: var(--text);
+}
 
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; }

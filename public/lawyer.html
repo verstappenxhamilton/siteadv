@@ -42,10 +42,44 @@
     <div class="panel" style="margin-top:14px;" id="chatPanel">
       <h3 style="margin-top:0;">Chat de Texto</h3>
       <div id="messages" class="chat-messages"></div>
+      <div id="quickReplies" class="actions quick-replies">
+        <button class="secondary quick-reply" data-msg="Olá, como posso ajudar?">Saudação</button>
+        <button class="secondary quick-reply" data-msg="Poderia fornecer mais detalhes?">Mais detalhes</button>
+        <button class="secondary quick-reply" data-msg="Vamos agendar uma reunião para discutir melhor?">Agendar reunião</button>
+        <button class="secondary quick-reply" data-msg="Estou analisando seu caso e retornarei em breve.">Analisar</button>
+      </div>
       <div class="chat-input">
         <input id="chatInput" type="text" placeholder="Digite sua mensagem" />
         <button id="sendBtn" class="primary" disabled>Enviar</button>
       </div>
+    </div>
+    <div class="panel" style="margin-top:14px;">
+      <h3 style="margin-top:0;">Configurações de IA</h3>
+      <form id="configForm" style="display:flex; flex-direction:column; gap:8px;">
+        <label>Provedor
+          <select name="provider">
+            <option value="openai">OpenAI</option>
+            <option value="anthropic">Anthropic</option>
+            <option value="groq">Groq</option>
+            <option value="gemini">Gemini</option>
+          </select>
+        </label>
+        <label>Max tokens <input type="number" name="max_output_tokens" value="200" /></label>
+        <label>Temperature <input type="number" step="0.1" name="temperature" value="0.7" /></label>
+        <label>Top P <input type="number" step="0.1" name="top_p" value="1" /></label>
+        <label>Prompt<br/>
+          <textarea name="prompt" rows="3">Você é um advogado profissional. Responda de forma curta, clara e educada em português.</textarea>
+        </label>
+        <button type="submit" class="primary">Salvar Config</button>
+      </form>
+      <form id="keyForm" style="display:flex; flex-direction:column; gap:8px; margin-top:12px;">
+        <h4 style="margin:0;">API Keys</h4>
+        <label>OpenAI <input type="password" name="openai" /></label>
+        <label>Anthropic <input type="password" name="anthropic" /></label>
+        <label>Groq <input type="password" name="groq" /></label>
+        <label>Gemini <input type="password" name="gemini" /></label>
+        <button type="submit" class="secondary">Salvar Chaves</button>
+      </form>
     </div>
   </div>
 
