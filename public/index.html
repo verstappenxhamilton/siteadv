@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Atendimento Jurídico | Cliente</title>
+  <title>Escritório de Advocacia</title>
   <link rel="stylesheet" href="/style.css" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <meta name="description" content="Fale por vídeo diretamente com seu advogado.">
@@ -19,6 +19,9 @@
         </div>
       </div>
       <div class="actions">
+        <a class="secondary" href="#about">Sobre</a>
+        <a class="secondary" href="#services">Atuação</a>
+        <a class="secondary" href="#contact">Contato</a>
         <a class="secondary" href="/lawyer.html" title="Área do Advogado">Área do Advogado</a>
       </div>
     </div>
@@ -48,6 +51,32 @@
       </div>
     </div>
 
+    <section id="about" class="panel" style="margin-top:14px;">
+      <h2 style="margin-top:0;">Sobre o Escritório</h2>
+      <p style="color: var(--muted);">Atendimento especializado e comprometido com a defesa dos seus direitos.</p>
+    </section>
+
+    <section id="services" class="panel" style="margin-top:14px;">
+      <h2 style="margin-top:0;">Áreas de Atuação</h2>
+      <ul style="margin:0; padding-left:20px;">
+        <li>Cível</li>
+        <li>Trabalhista</li>
+        <li>Família e Sucessões</li>
+      </ul>
+    </section>
+
+    <section id="contact" class="panel" style="margin-top:14px;">
+      <h2 style="margin-top:0;">Contato</h2>
+      <p style="color: var(--muted);">Envie uma mensagem ou inicie uma chamada de vídeo.</p>
+      <form id="contactForm" class="contact-form">
+        <input type="text" name="name" placeholder="Seu nome" required />
+        <input type="email" name="email" placeholder="Seu e-mail" required />
+        <textarea name="message" rows="4" placeholder="Mensagem" required></textarea>
+        <button type="submit" class="primary">Enviar mensagem</button>
+      </form>
+      <div id="contactStatus" class="footer"></div>
+    </section>
+
     <div class="footer">
       Conexão segura via WebRTC. Use Chrome/Edge/Firefox atualizados.
     </div>
@@ -55,5 +84,6 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script type="module" src="/client.js"></script>
+  <script type="module" src="/site.js"></script>
 </body>
 </html>

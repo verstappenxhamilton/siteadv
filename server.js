@@ -34,6 +34,19 @@ const io = new Server(server, {
 
 // Servir arquivos estáticos
 app.use(express.static('public'));
+app.use(express.json());
+
+app.post('/contact', (req, res) => {
+  const { name, email, message } = req.body || {};
+  if (!name || !email || !message) {
+    return res.status(400).json({ ok: false });
+  }
+  const log = `[${new Date().toISOString()}] ${name} <${email}>: ${message}\n`;
+  fs.appendFile(path.join(__dirname, 'contacts.log'), log, (err) => {
+    if (err) console.error('Erro ao salvar contato:', err);
+  });
+  res.json({ ok: true });
+});
 
 let lawyerSocket = null; // socket do advogado
 let busyWithClientId = null; // se estiver em ligação, guarda o id do cliente
