@@ -44,22 +44,24 @@ const adminConfig = {
   provider: 'openai',
   parameters: {
     model: 'gpt-4o-mini',
-    max_output_tokens: 500,
+    max_output_tokens: 200,
     temperature: 0.7,
     top_p: 1,
     stop_sequences: []
   },
-  prompt: 'Você é uma secretária jurídica especialista. Conduza a triagem em blocos e responda em português.',
+    prompt: 'Você é um advogado virtual do escritório. Responda em português com frases curtas e formais. Pergunte qual é o problema do cliente, solicite documentos relevantes e, se o tema for usucapião, questione se prefere via extrajudicial ou judicial e se deseja saber os custos de cada opção consultando as tabelas do TJMG. Quando tiver dados suficientes, finalize com uma linha "RELATORIO:" resumindo as informações para o advogado.',
   limits: { maxMessages: 20, maxChars: 1000 },
   features: { upload: false, ocr: false },
   apiKeys: {
     openai: process.env.OPENAI_API_KEY || '',
     anthropic: process.env.ANTHROPIC_API_KEY || '',
-    groq: process.env.GROQ_API_KEY || ''
+    groq: process.env.GROQ_API_KEY || '',
+    gemini: process.env.GEMINI_API_KEY || ''
   }
 };
 
 const sessions = {};
+const reports = [];
 
 // Endpoint simples para formulário de contato
 app.post('/contact', (req, res) => {
@@ -82,28 +84,41 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
   if (message.length > adminConfig.limits.maxChars) {
     return res.status(400).json({ error: 'msg_too_long' });
   }
-  const session = sessions[sessionId] || { count: 0, messages: [] };
+  const session = sessions[sessionId] || { count: 0, messages: [], done: false };
+  if (session.done) {
+    return res.status(400).json({ error: 'session_closed' });
+  }
   if (session.count >= adminConfig.limits.maxMessages) {
     return res.status(400).json({ error: 'limit_reached' });
   }
   session.count++;
   session.messages.push({ role: 'user', content: message });
   sessions[sessionId] = session;
+  const apiKey = adminConfig.apiKeys[adminConfig.provider];
+  if (!apiKey) {
+    return res.status(400).json({ error: 'missing_api_key' });
+  }
   try {
     const aiMessages = [{ role: 'system', content: adminConfig.prompt }, ...session.messages];
-    const reply = await generate(adminConfig.provider, adminConfig.apiKeys[adminConfig.provider], aiMessages, adminConfig.parameters);
+    const reply = await generate(adminConfig.provider, apiKey, aiMessages, adminConfig.parameters);
     session.messages.push({ role: 'assistant', content: reply });
-    res.json({ reply });
+    let clientReply = reply;
+    const idx = reply.indexOf('RELATORIO:');
+    if (idx !== -1) {
+      clientReply = reply.slice(0, idx).trim();
+      const reportText = reply.slice(idx + 'RELATORIO:'.length).trim();
+      reports.push({ sessionId, text: reportText, timestamp: Date.now() });
+      session.done = true;
+    }
+    res.json({ reply: clientReply });
   } catch (e) {
     console.error(e);
-    res.status(500).json({ error: 'provider_error' });
+    res.status(500).json({ error: 'provider_error', message: e.message });
   }
 });
 
-const adminKey = process.env.ADMIN_KEY || 'secret';
-
 const configSchema = z.object({
-  provider: z.enum(['openai', 'anthropic', 'groq']).optional(),
+  provider: z.enum(['openai', 'anthropic', 'groq', 'gemini']).optional(),
   parameters: z.object({
     model: z.string().optional(),
     max_output_tokens: z.number().optional(),
@@ -119,12 +134,8 @@ const configSchema = z.object({
 const keySchema = z.object({
   openai: z.string().optional(),
   anthropic: z.string().optional(),
-  groq: z.string().optional()
-});
-
-app.use('/admin', (req, res, next) => {
-  if (req.headers['x-admin-key'] !== adminKey) return res.sendStatus(401);
-  next();
+  groq: z.string().optional(),
+  gemini: z.string().optional()
 });
 
 app.get('/admin/config', (req, res) => {
@@ -145,6 +156,14 @@ app.post('/admin/keys', (req, res) => {
   if (!parsed.success) return res.status(400).json({ error: 'invalid_keys' });
   adminConfig.apiKeys = { ...adminConfig.apiKeys, ...parsed.data };
   res.json({ ok: true });
+});
+
+app.get('/admin/keys', (req, res) => {
+  res.json(adminConfig.apiKeys);
+});
+
+app.get('/admin/reports', (req, res) => {
+  res.json(reports);
 });
 
 let lawyerSocket = null; // socket do advogado
