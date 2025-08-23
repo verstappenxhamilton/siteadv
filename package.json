@@ -1,16 +1,25 @@
 {
-  "name": "site-advogado-webrtc",
+  "name": "triage-chat",
   "version": "1.0.0",
-  "description": "Site de advogado com chamada de vídeo (WebRTC) e presença online",
-  "main": "server.js",
+  "private": true,
   "scripts": {
-    "start": "node server.js"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "echo \"No tests specified\""
   },
-  "author": "",
-  "license": "MIT",
   "dependencies": {
-    "express": "^4.19.2",
-    "socket.io": "^4.7.5"
+    "@upstash/ratelimit": "^1.0.0",
+    "@upstash/redis": "^1.28.3",
+    "next": "^14.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.4.2",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "typescript": "^5.4.5"
   }
 }
-
