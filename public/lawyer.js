@@ -21,6 +21,50 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   let pendingMode = 'video';
   let currentChatClientId = null;
 
+  const configForm = document.getElementById('configForm');
+  const keyForm = document.getElementById('keyForm');
+
+  async function postAdmin(path, data) {
+    const key = prompt('Chave admin?');
+    await fetch(path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-key': key },
+      body: JSON.stringify(data)
+    });
+  }
+
+  if (configForm) {
+    configForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(configForm);
+      const data = {
+        provider: fd.get('provider'),
+        parameters: {
+          max_output_tokens: Number(fd.get('max_output_tokens')),
+          temperature: Number(fd.get('temperature')),
+          top_p: Number(fd.get('top_p'))
+        },
+        prompt: fd.get('prompt')
+      };
+      await postAdmin('/admin/config', data);
+      alert('Configuração salva');
+    });
+  }
+
+  if (keyForm) {
+    keyForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(keyForm);
+      const data = {
+        openai: fd.get('openai'),
+        anthropic: fd.get('anthropic'),
+        groq: fd.get('groq')
+      };
+      await postAdmin('/admin/keys', data);
+      alert('Chaves salvas');
+    });
+  }
+
   function setInfo(text) { info.textContent = text; }
 
   let pendingClientId = null;
@@ -85,10 +129,28 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
     if (e.key === 'Enter') { e.preventDefault(); sendChat(); }
   });
 
+  async function handleAiReply(clientId, msg) {
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: clientId, message: msg })
+      });
+      const data = await res.json();
+      if (data.reply) {
+        appendMessage('IA', data.reply);
+        socket.emit('chat-message', { targetId: clientId, message: data.reply });
+      }
+    } catch (e) {
+      console.error('AI error', e);
+    }
+  }
+
   socket.on('chat-message', ({ from, message }) => {
     currentChatClientId = from;
     appendMessage('Cliente', message);
     sendBtn.disabled = false;
+    handleAiReply(from, message);
   });
 
   socket.on('webrtc-offer', async ({ from, sdp }) => {
@@ -173,4 +235,13 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   if (isPotentiallyInsecureContext()) {
     setInfo('Aviso: contexto inseguro pode bloquear câmera/microfone. Use localhost ou HTTPS.');
   }
+
+  document.querySelectorAll('.quick-reply').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const msg = btn.dataset.msg;
+      if (!msg || !currentChatClientId) return;
+      appendMessage('Você', msg);
+      socket.emit('chat-message', { targetId: currentChatClientId, message: msg });
+    });
+  });
 })();

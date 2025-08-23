@@ -44,12 +44,12 @@ const adminConfig = {
   provider: 'openai',
   parameters: {
     model: 'gpt-4o-mini',
-    max_output_tokens: 500,
+    max_output_tokens: 200,
     temperature: 0.7,
     top_p: 1,
     stop_sequences: []
   },
-  prompt: 'Você é uma secretária jurídica especialista. Conduza a triagem em blocos e responda em português.',
+  prompt: 'Você é um advogado profissional. Responda de forma curta, clara e educada em português.',
   limits: { maxMessages: 20, maxChars: 1000 },
   features: { upload: false, ocr: false },
   apiKeys: {
