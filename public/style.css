@@ -255,6 +255,22 @@ button.danger { background: #ef4444; color: white; }
   margin-bottom: 8px;
 }
 
+.chat-messages .msg {
+  margin-bottom: 4px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  white-space: pre-wrap;
+}
+
+.chat-messages .msg.user {
+  background: #1e293b;
+  text-align: right;
+}
+
+.chat-messages .msg.assistant {
+  background: #334155;
+}
+
 .chat-input {
   display: flex;
   gap: 8px;
