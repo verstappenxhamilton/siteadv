@@ -11,6 +11,9 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   const messages = document.getElementById('messages');
   const chatInput = document.getElementById('chatInput');
   const sendBtn = document.getElementById('sendBtn');
+  const quickReplies = document.getElementById('quickReplies');
+  const aiConfigForm = document.getElementById('aiConfigForm');
+  const aiKeyForm = document.getElementById('aiKeyForm');
 
   const socket = io();
   socket.emit('identify', { role: 'lawyer' });
@@ -72,12 +75,63 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
     messages.scrollTop = messages.scrollHeight;
   }
 
+  function emitChat(text) {
+    if (!text || !currentChatClientId) return;
+    appendMessage('Você', text);
+    socket.emit('chat-message', { targetId: currentChatClientId, message: text });
+  }
+
   function sendChat() {
     const msg = chatInput.value.trim();
-    if (!msg || !currentChatClientId) return;
-    appendMessage('Você', msg);
-    socket.emit('chat-message', { targetId: currentChatClientId, message: msg });
+    emitChat(msg);
     chatInput.value = '';
+  }
+
+  // Respostas pré-fabricadas
+  if (quickReplies) {
+    quickReplies.querySelectorAll('button').forEach(btn => {
+      btn.disabled = true;
+      btn.addEventListener('click', () => {
+        const text = btn.dataset.text;
+        emitChat(text);
+      });
+    });
+  }
+
+  async function post(path, data) {
+    const key = prompt('Chave admin?');
+    await fetch(path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-key': key },
+      body: JSON.stringify(data)
+    });
+  }
+
+  if (aiConfigForm) {
+    aiConfigForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(aiConfigForm);
+      const data = {
+        provider: fd.get('provider'),
+        prompt: fd.get('prompt')
+      };
+      await post('/admin/config', data);
+      alert('Configuração de IA salva');
+    });
+  }
+
+  if (aiKeyForm) {
+    aiKeyForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(aiKeyForm);
+      const data = {
+        openai: fd.get('openai'),
+        anthropic: fd.get('anthropic'),
+        groq: fd.get('groq')
+      };
+      await post('/admin/keys', data);
+      alert('Chaves salvas');
+    });
   }
 
   sendBtn.addEventListener('click', sendChat);
@@ -89,6 +143,9 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
     currentChatClientId = from;
     appendMessage('Cliente', message);
     sendBtn.disabled = false;
+    if (quickReplies) {
+      quickReplies.querySelectorAll('button').forEach(b => (b.disabled = false));
+    }
   });
 
   socket.on('webrtc-offer', async ({ from, sdp }) => {
@@ -146,6 +203,11 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
     remoteVideo.srcObject = null;
     hangupBtn.disabled = true;
     currentClientId = null;
+    currentChatClientId = null;
+    sendBtn.disabled = true;
+    if (quickReplies) {
+      quickReplies.querySelectorAll('button').forEach(b => (b.disabled = true));
+    }
     setInfo(message || 'Aguardando chamadas...');
   }
 

@@ -445,3 +445,7 @@ body { scroll-behavior: smooth; }
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Respostas rápidas no chat do advogado */
+.quick-replies { margin: 8px 0; }
+.quick-replies button { margin-right: 6px; margin-bottom: 6px; }
