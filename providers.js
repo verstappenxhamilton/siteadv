@@ -70,10 +70,59 @@ async function groqGenerate(apiKey, messages, params) {
   return '';
 }
 
+async function detectGeminiModel(apiKey) {
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+    const data = await res.json();
+    if (Array.isArray(data.models)) {
+      const flash = data.models
+        .map(m => m.name.replace('models/', ''))
+        .filter(name => /gemini-.*flash/i.test(name))
+        .sort((a, b) => {
+          const pa = parseFloat(a.match(/gemini-(\d+(?:\.\d+)?)/i)?.[1] || '0');
+          const pb = parseFloat(b.match(/gemini-(\d+(?:\.\d+)?)/i)?.[1] || '0');
+          return pb - pa;
+        })[0];
+      if (flash) return flash;
+    }
+  } catch (e) {
+    // silent
+  }
+  return 'gemini-2.0-flash';
+}
+
+async function geminiGenerate(apiKey, messages, params) {
+  const model = params.model || await detectGeminiModel(apiKey);
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: messages.map(m => ({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.content }]
+      })),
+      generationConfig: {
+        maxOutputTokens: params.max_output_tokens,
+        temperature: params.temperature,
+        topP: params.top_p,
+        stopSequences: params.stop_sequences
+      }
+    })
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error && data.error.message ? data.error.message : 'gemini_error');
+  }
+  return data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text || '';
+}
+
 async function generate(provider, apiKey, messages, params) {
   switch (provider) {
     case 'anthropic':
       return anthropicGenerate(apiKey, messages, params);
+    case 'gemini':
+      return geminiGenerate(apiKey, messages, params);
     case 'groq':
       return groqGenerate(apiKey, messages, params);
     case 'openai':
