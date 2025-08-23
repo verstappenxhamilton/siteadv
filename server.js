@@ -9,6 +9,9 @@ const { z } = require('zod');
 const { generate } = require('./providers');
 
 const app = express();
+// Permitir que o Express confie nos cabeçalhos X-Forwarded-* quando estiver atrás de proxies
+// evitando erros do express-rate-limit quando esses cabeçalhos forem adicionados.
+app.set('trust proxy', 1);
 
 // Detectar certificados locais para HTTPS
 let server;
@@ -44,22 +47,25 @@ const adminConfig = {
   provider: 'openai',
   parameters: {
     model: 'gpt-4o-mini',
-    max_output_tokens: 500,
+    max_output_tokens: 200,
     temperature: 0.7,
     top_p: 1,
     stop_sequences: []
   },
-  prompt: 'Você é uma secretária jurídica especialista. Conduza a triagem em blocos e responda em português.',
+  prompt: 'Você é um advogado virtual do escritório. Responda em português formal e de maneira breve. Ao receber o resumo do cliente, gere perguntas objetivas para coletar dados e verificar documentos, incluindo opções como usucapião judicial ou extrajudicial com seus respectivos custos no TJMG quando cabível. Depois das respostas do cliente, forneça uma orientação final e encerre com uma linha "RELATORIO:" resumindo as informações para o advogado.',
   limits: { maxMessages: 20, maxChars: 1000 },
   features: { upload: false, ocr: false },
   apiKeys: {
     openai: process.env.OPENAI_API_KEY || '',
     anthropic: process.env.ANTHROPIC_API_KEY || '',
-    groq: process.env.GROQ_API_KEY || ''
+    groq: process.env.GROQ_API_KEY || '',
+    gemini: process.env.GEMINI_API_KEY || ''
   }
 };
 
 const sessions = {};
+const reports = [];
+const intakes = {};
 
 // Endpoint simples para formulário de contato
 app.post('/contact', (req, res) => {
@@ -73,6 +79,22 @@ const messageSchema = z.object({
   message: z.string().min(1)
 });
 
+const summarySchema = z.object({
+  sessionId: z.string(),
+  summary: z.string().min(1)
+});
+
+const answersSchema = z.object({
+  sessionId: z.string(),
+  answers: z.record(z.string())
+});
+
+const contactSchema = z.object({
+  sessionId: z.string(),
+  name: z.string(),
+  contact: z.string()
+});
+
 app.post('/api/chat', chatLimiter, async (req, res) => {
   const parsed = messageSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -82,28 +104,127 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
   if (message.length > adminConfig.limits.maxChars) {
     return res.status(400).json({ error: 'msg_too_long' });
   }
-  const session = sessions[sessionId] || { count: 0, messages: [] };
+  const session = sessions[sessionId] || { count: 0, messages: [], done: false };
+  if (session.done) {
+    return res.status(400).json({ error: 'session_closed' });
+  }
   if (session.count >= adminConfig.limits.maxMessages) {
     return res.status(400).json({ error: 'limit_reached' });
   }
   session.count++;
   session.messages.push({ role: 'user', content: message });
   sessions[sessionId] = session;
+  const apiKey = adminConfig.apiKeys[adminConfig.provider];
+  if (!apiKey) {
+    return res.status(400).json({ error: 'missing_api_key' });
+  }
   try {
     const aiMessages = [{ role: 'system', content: adminConfig.prompt }, ...session.messages];
-    const reply = await generate(adminConfig.provider, adminConfig.apiKeys[adminConfig.provider], aiMessages, adminConfig.parameters);
+    const reply = await generate(adminConfig.provider, apiKey, aiMessages, adminConfig.parameters);
     session.messages.push({ role: 'assistant', content: reply });
-    res.json({ reply });
+    let clientReply = reply;
+    const idx = reply.indexOf('RELATORIO:');
+    if (idx !== -1) {
+      clientReply = reply.slice(0, idx).trim();
+      const reportText = reply.slice(idx + 'RELATORIO:'.length).trim();
+      reports.push({ sessionId, text: reportText, timestamp: Date.now() });
+      session.done = true;
+    }
+    res.json({ reply: clientReply });
   } catch (e) {
     console.error(e);
-    res.status(500).json({ error: 'provider_error' });
+    res.status(500).json({ error: 'provider_error', message: e.message });
   }
 });
 
-const adminKey = process.env.ADMIN_KEY || 'secret';
+app.post('/api/questions', chatLimiter, async (req, res) => {
+  const parsed = summarySchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'invalid_request' });
+  }
+  const { sessionId, summary } = parsed.data;
+  if (summary.length > adminConfig.limits.maxChars) {
+    return res.status(400).json({ error: 'msg_too_long' });
+  }
+  const apiKey = adminConfig.apiKeys[adminConfig.provider];
+  if (!apiKey) {
+    return res.status(400).json({ error: 'missing_api_key' });
+  }
+  try {
+    const sys = `${adminConfig.prompt}\nResponda apenas com JSON.`;
+    const messages = [
+      { role: 'system', content: sys },
+      { role: 'user', content: `Resumo: ${summary}\nListe as principais perguntas necessárias para orientar o caso.` }
+    ];
+    const reply = await generate(adminConfig.provider, apiKey, messages, adminConfig.parameters);
+    // Alguns provedores podem envolver a saída em blocos de código. Removemos
+    // quaisquer cercas ``` antes de tentar interpretar o JSON.
+    const cleaned = reply.replace(/```(json)?|```/gi, '').trim();
+    let questions;
+    try {
+      questions = JSON.parse(cleaned);
+    } catch {
+      throw new Error('invalid_json');
+    }
+    intakes[sessionId] = { summary, questions, stage: 'questions' };
+    res.json({ questions });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'provider_error', message: e.message });
+  }
+});
+
+app.post('/api/answers', chatLimiter, async (req, res) => {
+  const parsed = answersSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'invalid_request' });
+  }
+  const { sessionId, answers } = parsed.data;
+  const intake = intakes[sessionId];
+  if (!intake || intake.stage !== 'questions') {
+    return res.status(400).json({ error: 'invalid_session' });
+  }
+  const apiKey = adminConfig.apiKeys[adminConfig.provider];
+  if (!apiKey) {
+    return res.status(400).json({ error: 'missing_api_key' });
+  }
+  try {
+    const answersText = Object.entries(answers).map(([k, v]) => `${k}: ${v}`).join('\n');
+    const userText = `Resumo: ${intake.summary}\nRespostas:\n${answersText}\nForneça orientação final e finalize com RELATORIO:`;
+    const messages = [
+      { role: 'system', content: adminConfig.prompt },
+      { role: 'user', content: userText }
+    ];
+    const reply = await generate(adminConfig.provider, apiKey, messages, adminConfig.parameters);
+    let clientReply = reply;
+    const idx = reply.indexOf('RELATORIO:');
+    if (idx !== -1) {
+      clientReply = reply.slice(0, idx).trim();
+      const reportText = reply.slice(idx + 'RELATORIO:'.length).trim();
+      reports.push({ sessionId, text: reportText, timestamp: Date.now() });
+      intake.stage = 'done';
+    }
+    res.json({ reply: clientReply });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'provider_error', message: e.message });
+  }
+});
+
+app.post('/api/report-contact', (req, res) => {
+  const parsed = contactSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'invalid_request' });
+  const { sessionId, name, contact } = parsed.data;
+  const rpt = reports.find(r => r.sessionId === sessionId);
+  if (rpt) {
+    rpt.name = name;
+    rpt.contact = contact;
+  }
+  res.json({ ok: true });
+});
 
 const configSchema = z.object({
-  provider: z.enum(['openai', 'anthropic', 'groq']).optional(),
+  provider: z.enum(['openai', 'anthropic', 'groq', 'gemini']).optional(),
   parameters: z.object({
     model: z.string().optional(),
     max_output_tokens: z.number().optional(),
@@ -119,12 +240,8 @@ const configSchema = z.object({
 const keySchema = z.object({
   openai: z.string().optional(),
   anthropic: z.string().optional(),
-  groq: z.string().optional()
-});
-
-app.use('/admin', (req, res, next) => {
-  if (req.headers['x-admin-key'] !== adminKey) return res.sendStatus(401);
-  next();
+  groq: z.string().optional(),
+  gemini: z.string().optional()
 });
 
 app.get('/admin/config', (req, res) => {
@@ -145,6 +262,14 @@ app.post('/admin/keys', (req, res) => {
   if (!parsed.success) return res.status(400).json({ error: 'invalid_keys' });
   adminConfig.apiKeys = { ...adminConfig.apiKeys, ...parsed.data };
   res.json({ ok: true });
+});
+
+app.get('/admin/keys', (req, res) => {
+  res.json(adminConfig.apiKeys);
+});
+
+app.get('/admin/reports', (req, res) => {
+  res.json(reports);
 });
 
 let lawyerSocket = null; // socket do advogado
