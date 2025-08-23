@@ -63,7 +63,7 @@ io.on('connection', (socket) => {
   });
 
   // Cliente pede para iniciar uma chamada
-  socket.on('request-call', () => {
+  socket.on('request-call', ({ mode }) => {
     if (!lawyerSocket) {
       socket.emit('call-unavailable', { reason: 'offline' });
       return;
@@ -74,7 +74,7 @@ io.on('connection', (socket) => {
     }
     busyWithClientId = socket.id;
     broadcastLawyerStatus();
-    lawyerSocket.emit('incoming-call', { clientId: socket.id });
+    lawyerSocket.emit('incoming-call', { clientId: socket.id, mode });
   });
 
   // Advogado aceita a chamada
@@ -112,6 +112,16 @@ io.on('connection', (socket) => {
   });
   socket.on('webrtc-ice-candidate', ({ targetId, candidate }) => {
     if (targetId && candidate) io.to(targetId).emit('webrtc-ice-candidate', { from: socket.id, candidate });
+  });
+
+  // Mensagens de chat de texto
+  socket.on('chat-message', ({ targetId, message }) => {
+    if (!message) return;
+    if (lawyerSocket && socket.id === lawyerSocket.id) {
+      if (targetId) io.to(targetId).emit('chat-message', { from: 'lawyer', message });
+    } else {
+      if (lawyerSocket) lawyerSocket.emit('chat-message', { from: socket.id, message });
+    }
   });
 
   socket.on('disconnect', () => {
