@@ -8,6 +8,9 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   const acceptBtn = document.getElementById('acceptBtn');
   const rejectBtn = document.getElementById('rejectBtn');
   const hangupBtn = document.getElementById('hangupBtn');
+  const messages = document.getElementById('messages');
+  const chatInput = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('sendBtn');
 
   const socket = io();
   socket.emit('identify', { role: 'lawyer' });
@@ -15,12 +18,15 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   let pc = null; // RTCPeerConnection
   let localStream = null;
   let currentClientId = null;
+  let pendingMode = 'video';
+  let currentChatClientId = null;
 
   function setInfo(text) { info.textContent = text; }
 
   let pendingClientId = null;
-  socket.on('incoming-call', ({ clientId }) => {
+  socket.on('incoming-call', ({ clientId, mode }) => {
     pendingClientId = clientId;
+    pendingMode = mode || 'video';
     incoming.style.display = 'flex';
   });
 
@@ -37,7 +43,7 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
     incoming.style.display = 'none';
     setInfo('Preparando mídia...');
     try {
-      const res = await getMediaWithFallback();
+      const res = await getMediaWithFallback(pendingMode);
       localStream = res.stream;
       localVideo.srcObject = localStream;
       pc = createPeerConnection(currentClientId);
@@ -56,6 +62,33 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   hangupBtn.addEventListener('click', () => {
     if (currentClientId) socket.emit('end-call', { targetId: currentClientId });
     endCall('Você encerrou a chamada.');
+  });
+
+  // Chat
+  function appendMessage(sender, text) {
+    const div = document.createElement('div');
+    div.textContent = `${sender}: ${text}`;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function sendChat() {
+    const msg = chatInput.value.trim();
+    if (!msg || !currentChatClientId) return;
+    appendMessage('Você', msg);
+    socket.emit('chat-message', { targetId: currentChatClientId, message: msg });
+    chatInput.value = '';
+  }
+
+  sendBtn.addEventListener('click', sendChat);
+  chatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); sendChat(); }
+  });
+
+  socket.on('chat-message', ({ from, message }) => {
+    currentChatClientId = from;
+    appendMessage('Cliente', message);
+    sendBtn.disabled = false;
   });
 
   socket.on('webrtc-offer', async ({ from, sdp }) => {

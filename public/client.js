@@ -7,6 +7,18 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   const endBtn = document.getElementById('endBtn');
   const localVideo = document.getElementById('localVideo');
   const remoteVideo = document.getElementById('remoteVideo');
+  const callInterface = document.getElementById('callInterface');
+  const videoContainer = document.getElementById('videoContainer');
+  const chatContainer = document.getElementById('chatContainer');
+  const messages = document.getElementById('messages');
+  const chatInput = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const testBtn = document.getElementById('testBtn');
+  const modeRadios = document.querySelectorAll('input[name="mode"]');
+
+  let currentMode = 'video';
+  let lastOnline = false;
+  let lastBusy = false;
 
   const socket = io();
   socket.emit('identify', { role: 'client' });
@@ -18,27 +30,58 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   function setInfo(text) { info.textContent = text; }
 
   function setStatusOnline(online, busy) {
+    lastOnline = online;
+    lastBusy = busy;
     if (online && !busy) {
       statusBadge.className = 'badge online';
       statusBadge.textContent = 'Advogado online';
-      callBtn.disabled = false;
     } else if (online && busy) {
       statusBadge.className = 'badge busy';
       statusBadge.textContent = 'Advogado em chamada';
-      callBtn.disabled = true;
     } else {
       statusBadge.className = 'badge';
       statusBadge.textContent = 'Advogado offline';
-      callBtn.disabled = true;
+    }
+    callBtn.disabled = !(online && !busy) || currentMode === 'chat';
+    if (online) {
+      callInterface.classList.remove('hidden');
+    } else {
+      callInterface.classList.add('hidden');
+    }
+    if (currentMode === 'chat') {
+      sendBtn.disabled = !online;
     }
   }
 
   socket.on('lawyer-status', ({ online, busy }) => setStatusOnline(online, busy));
 
+  modeRadios.forEach(r => r.addEventListener('change', () => {
+    currentMode = document.querySelector('input[name="mode"]:checked').value;
+    if (currentMode === 'chat') {
+      videoContainer.classList.add('hidden');
+      chatContainer.classList.remove('hidden');
+      callBtn.classList.add('hidden');
+      endBtn.classList.add('hidden');
+      testBtn.classList.add('hidden');
+      setInfo('Converse por texto com o advogado.');
+      sendBtn.disabled = !lastOnline;
+    } else {
+      videoContainer.classList.remove('hidden');
+      chatContainer.classList.add('hidden');
+      callBtn.classList.remove('hidden');
+      endBtn.classList.remove('hidden');
+      testBtn.classList.remove('hidden');
+      callBtn.textContent = currentMode === 'audio' ? 'Ligar (áudio)' : 'Ligar agora';
+      setInfo('Aguardando...');
+      sendBtn.disabled = true;
+    }
+    callBtn.disabled = !(lastOnline && !lastBusy) || currentMode === 'chat';
+  }));
+
   callBtn.addEventListener('click', async () => {
     callBtn.disabled = true;
     setInfo('Chamando o advogado...');
-    socket.emit('request-call');
+    socket.emit('request-call', { mode: currentMode });
   });
 
   endBtn.addEventListener('click', async () => {
@@ -56,7 +99,7 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
     currentLawyerId = lawyerId;
     setInfo('Chamada aceita. Iniciando mídia...');
     try {
-      const res = await getMediaWithFallback();
+      const res = await getMediaWithFallback(currentMode);
       localStream = res.stream;
       localVideo.srcObject = localStream;
 
@@ -133,12 +176,37 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
     setInfo(message || 'Aguardando...');
   }
 
+  // Chat
+  function appendMessage(sender, text) {
+    const div = document.createElement('div');
+    div.textContent = `${sender}: ${text}`;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function sendChat() {
+    const msg = chatInput.value.trim();
+    if (!msg) return;
+    appendMessage('Você', msg);
+    socket.emit('chat-message', { message: msg });
+    chatInput.value = '';
+  }
+
+  sendBtn.addEventListener('click', sendChat);
+  chatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); sendChat(); }
+  });
+
+  socket.on('chat-message', ({ from, message }) => {
+    const sender = from === 'lawyer' ? 'Advogado' : 'Cliente';
+    appendMessage(sender, message);
+  });
+
   // Teste manual de mídia
-  const testBtn = document.getElementById('testBtn');
   if (testBtn) {
     testBtn.addEventListener('click', async () => {
       try {
-        const res = await getMediaWithFallback();
+        const res = await getMediaWithFallback(currentMode);
         setInfo('Teste: ' + res.note);
         const tmp = res.stream;
         localVideo.srcObject = tmp;
