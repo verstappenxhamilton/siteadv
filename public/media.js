@@ -1,5 +1,9 @@
 // Utilitários para capturar mídia com mensagens claras e fallbacks
-export async function getMediaWithFallback() {
+export async function getMediaWithFallback(mode = 'video') {
+  if (mode === 'audio') {
+    const s = await navigator.mediaDevices.getUserMedia({ video: false, audio: { echoCancellation: true, noiseSuppression: true } });
+    return { stream: s, note: 'Somente áudio ativo.' };
+  }
   const constraintsBoth = { video: { width: { ideal: 1280 }, height: { ideal: 720 } }, audio: { echoCancellation: true, noiseSuppression: true } };
   try {
     const s = await navigator.mediaDevices.getUserMedia(constraintsBoth);
