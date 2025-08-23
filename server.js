@@ -4,6 +4,10 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const { Server } = require('socket.io');
+const rateLimit = require('express-rate-limit');
+const { z } = require('zod');
+const { generate } = require('./providers');
+const multer = require('multer');
 
 const app = express();
 
@@ -35,12 +39,178 @@ const io = new Server(server, {
 // Middleware
 app.use(express.static('public'));
 app.use(express.json());
+const chatLimiter = rateLimit({ windowMs: 60 * 1000, max: 20 });
+const upload = multer({
+  dest: path.join(__dirname, 'uploads'),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (!/\.(pdf|png|jpg|jpeg)$/i.test(file.originalname)) {
+      return cb(new Error('invalid_type'));
+    }
+    cb(null, true);
+  }
+});
+
+const adminConfig = {
+  provider: 'openai',
+  parameters: {
+    model: 'gpt-4o-mini',
+    max_output_tokens: 500,
+    temperature: 0.7,
+    top_p: 1,
+    stop_sequences: []
+  },
+  prompt: 'Você é uma secretária jurídica especialista. Conduza a triagem em blocos e responda em português.',
+  limits: { maxMessages: 20, maxChars: 1000 },
+  features: { upload: false, ocr: false },
+  apiKeys: {
+    openai: process.env.OPENAI_API_KEY || '',
+    anthropic: process.env.ANTHROPIC_API_KEY || '',
+    groq: process.env.GROQ_API_KEY || ''
+  }
+};
+
+const sessions = {};
 
 // Endpoint simples para formulário de contato
 app.post('/contact', (req, res) => {
   const { nome, email, mensagem } = req.body || {};
   console.log('Contato recebido:', nome, email, mensagem);
   res.sendStatus(200);
+});
+
+app.get('/config', (req, res) => {
+  res.json({ features: adminConfig.features, limits: adminConfig.limits });
+});
+
+const messageSchema = z.object({
+  sessionId: z.string(),
+  message: z.string().min(1)
+});
+
+app.post('/api/chat', chatLimiter, async (req, res) => {
+  const parsed = messageSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'invalid_request' });
+  }
+  const { sessionId, message } = parsed.data;
+  if (message.length > adminConfig.limits.maxChars) {
+    return res.status(400).json({ error: 'msg_too_long' });
+  }
+  const session = sessions[sessionId] || { count: 0, messages: [] };
+  if (session.count >= adminConfig.limits.maxMessages) {
+    return res.status(400).json({ error: 'limit_reached' });
+  }
+  session.count++;
+  session.messages.push({ role: 'user', content: message });
+  sessions[sessionId] = session;
+  try {
+    const aiMessages = [{ role: 'system', content: adminConfig.prompt }, ...session.messages];
+    const reply = await generate(adminConfig.provider, adminConfig.apiKeys[adminConfig.provider], aiMessages, adminConfig.parameters);
+    session.messages.push({ role: 'assistant', content: reply });
+    res.json({ reply });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'provider_error' });
+  }
+});
+
+const triageSchema = z.object({
+  identificacao: z.object({
+    nome: z.string().min(1),
+    email: z.string().email()
+  }),
+  caso: z.object({
+    area: z.string().min(1),
+    descricao: z.string().min(1)
+  }),
+  prazos: z.object({
+    prazo: z.string().optional(),
+    risco: z.string().min(1)
+  }),
+  documentos: z.object({
+    arquivos: z.array(z.string()).optional()
+  })
+});
+
+app.post('/api/triage-summary', async (req, res) => {
+  const parsed = triageSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'invalid_data' });
+  try {
+    const data = parsed.data;
+    const messages = [
+      { role: 'system', content: adminConfig.prompt },
+      {
+        role: 'user',
+        content: `Gere um resumo factual em bullets e um checklist de pendências a partir dos dados: ${JSON.stringify(data)}`
+      }
+    ];
+    const summary = await generate(
+      adminConfig.provider,
+      adminConfig.apiKeys[adminConfig.provider],
+      messages,
+      adminConfig.parameters
+    );
+    res.json({ summary, data });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'provider_error' });
+  }
+});
+
+app.post('/api/upload', (req, res, next) => {
+  if (!adminConfig.features.upload) return res.status(403).json({ error: 'disabled' });
+  next();
+}, upload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'no_file' });
+  res.json({ filename: req.file.filename, originalname: req.file.originalname });
+});
+
+const adminKey = process.env.ADMIN_KEY || 'secret';
+
+const configSchema = z.object({
+  provider: z.enum(['openai', 'anthropic', 'groq']).optional(),
+  parameters: z.object({
+    model: z.string().optional(),
+    max_output_tokens: z.number().optional(),
+    temperature: z.number().optional(),
+    top_p: z.number().optional(),
+    stop_sequences: z.array(z.string()).optional()
+  }).partial().optional(),
+  prompt: z.string().optional(),
+  features: z.object({ upload: z.boolean().optional(), ocr: z.boolean().optional() }).partial().optional(),
+  limits: z.object({ maxMessages: z.number().optional(), maxChars: z.number().optional() }).partial().optional()
+});
+
+const keySchema = z.object({
+  openai: z.string().optional(),
+  anthropic: z.string().optional(),
+  groq: z.string().optional()
+});
+
+app.use('/admin', (req, res, next) => {
+  if (req.headers['x-admin-key'] !== adminKey) return res.sendStatus(401);
+  next();
+});
+
+app.get('/admin/config', (req, res) => {
+  const safe = { ...adminConfig };
+  delete safe.apiKeys;
+  res.json(safe);
+});
+
+app.post('/admin/config', (req, res) => {
+  const parsed = configSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'invalid_config' });
+  Object.assign(adminConfig, parsed.data);
+  res.json({ ok: true });
+});
+
+app.post('/admin/keys', (req, res) => {
+  const parsed = keySchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'invalid_keys' });
+  adminConfig.apiKeys = { ...adminConfig.apiKeys, ...parsed.data };
+  res.json({ ok: true });
 });
 
 let lawyerSocket = null; // socket do advogado

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <title>Painel Admin</title>
+</head>
+<body>
+  <h1>Painel Administrativo</h1>
+  <form id="configForm">
+    <label>Provedor
+      <select name="provider">
+        <option value="openai">OpenAI</option>
+        <option value="anthropic">Anthropic</option>
+        <option value="groq">Groq</option>
+      </select>
+    </label>
+    <label>Max tokens <input type="number" name="max_output_tokens" /></label>
+    <label>Temperature <input type="number" step="0.1" name="temperature" /></label>
+    <label>Top P <input type="number" step="0.1" name="top_p" /></label>
+    <label>Prompt<br/><textarea name="prompt" rows="4" cols="40"></textarea></label>
+    <label>Max mensagens <input type="number" name="maxMessages" /></label>
+    <label>Max caracteres <input type="number" name="maxChars" /></label>
+    <label><input type="checkbox" name="upload" /> Habilitar upload</label>
+    <label><input type="checkbox" name="ocr" /> Habilitar OCR</label>
+    <button type="submit">Salvar</button>
+  </form>
+  <form id="keyForm">
+    <h2>API Keys</h2>
+    <label>OpenAI <input type="password" name="openai" /></label>
+    <label>Anthropic <input type="password" name="anthropic" /></label>
+    <label>Groq <input type="password" name="groq" /></label>
+    <button type="submit">Salvar chaves</button>
+  </form>
+  <script src="/admin.js"></script>
+</body>
+</html>

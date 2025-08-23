@@ -255,6 +255,22 @@ button.danger { background: #ef4444; color: white; }
   margin-bottom: 8px;
 }
 
+.chat-messages .msg {
+  margin-bottom: 4px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  white-space: pre-wrap;
+}
+
+.chat-messages .msg.user {
+  background: #1e293b;
+  text-align: right;
+}
+
+.chat-messages .msg.assistant {
+  background: #334155;
+}
+
 .chat-input {
   display: flex;
   gap: 8px;
@@ -270,6 +286,33 @@ button.danger { background: #ef4444; color: white; }
 }
 
 .chat-input button { flex-shrink: 0; }
+
+.chat-messages .msg form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chat-messages .msg form label {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}
+
+.chat-messages .msg form input,
+.chat-messages .msg form textarea,
+.chat-messages .msg form select {
+  margin-top: 4px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: #0b1224;
+  color: var(--text);
+}
+
+.chat-messages .msg form button {
+  align-self: flex-end;
+}
 
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; }
