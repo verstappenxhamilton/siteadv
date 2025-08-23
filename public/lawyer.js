@@ -8,6 +8,10 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   const acceptBtn = document.getElementById('acceptBtn');
   const rejectBtn = document.getElementById('rejectBtn');
   const hangupBtn = document.getElementById('hangupBtn');
+  const videoArea = document.querySelector('.videos');
+  const chatMessages = document.getElementById('chatMessages');
+  const chatForm = document.getElementById('chatForm');
+  const chatInput = document.getElementById('chatInput');
 
   const socket = io();
   socket.emit('identify', { role: 'lawyer' });
@@ -15,12 +19,15 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   let pc = null; // RTCPeerConnection
   let localStream = null;
   let currentClientId = null;
+  let currentMode = 'av';
 
   function setInfo(text) { info.textContent = text; }
 
   let pendingClientId = null;
-  socket.on('incoming-call', ({ clientId }) => {
+  socket.on('incoming-call', ({ clientId, mode }) => {
     pendingClientId = clientId;
+    currentMode = mode || 'av';
+    incoming.querySelector('.modal').querySelector('div').textContent = mode === 'audio' ? 'Chamada de voz' : 'Chamada de vídeo';
     incoming.style.display = 'flex';
   });
 
@@ -37,9 +44,17 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
     incoming.style.display = 'none';
     setInfo('Preparando mídia...');
     try {
-      const res = await getMediaWithFallback();
+      let res;
+      if (currentMode === 'audio') {
+        const s = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        res = { stream: s };
+        videoArea.style.display = 'none';
+      } else {
+        res = await getMediaWithFallback();
+        videoArea.style.display = 'grid';
+      }
       localStream = res.stream;
-      localVideo.srcObject = localStream;
+      if (currentMode !== 'audio') localVideo.srcObject = localStream;
       pc = createPeerConnection(currentClientId);
       localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
       socket.emit('accept-call', { clientId: currentClientId });
@@ -111,6 +126,7 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
     }
     localVideo.srcObject = null;
     remoteVideo.srcObject = null;
+    videoArea.style.display = 'grid';
     hangupBtn.disabled = true;
     currentClientId = null;
     setInfo(message || 'Aguardando chamadas...');
@@ -139,5 +155,31 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   // Aviso de contexto inseguro
   if (isPotentiallyInsecureContext()) {
     setInfo('Aviso: contexto inseguro pode bloquear câmera/microfone. Use localhost ou HTTPS.');
+  }
+
+  // Chat
+  if (chatForm) {
+    chatForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const msg = chatInput.value.trim();
+      if (!msg || !currentClientId) return;
+      appendChat('Você: ' + msg);
+      socket.emit('chat-from-lawyer', { clientId: currentClientId, message: msg });
+      chatInput.value = '';
+    });
+  }
+
+  socket.on('chat-from-client', ({ clientId, message }) => {
+    if (!currentClientId) currentClientId = clientId;
+    if (clientId !== currentClientId) return;
+    appendChat('Cliente: ' + message);
+  });
+
+  function appendChat(text) {
+    if (!chatMessages) return;
+    const div = document.createElement('div');
+    div.textContent = text;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
   }
 })();

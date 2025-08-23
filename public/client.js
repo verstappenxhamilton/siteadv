@@ -7,6 +7,13 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   const endBtn = document.getElementById('endBtn');
   const localVideo = document.getElementById('localVideo');
   const remoteVideo = document.getElementById('remoteVideo');
+  const callModeSel = document.getElementById('callMode');
+  const videoArea = document.getElementById('videoArea');
+  const contactSection = document.getElementById('contato');
+  const navContato = document.getElementById('navContato');
+  const chatMessages = document.getElementById('chatMessages');
+  const chatForm = document.getElementById('chatForm');
+  const chatInput = document.getElementById('chatInput');
 
   const socket = io();
   socket.emit('identify', { role: 'client' });
@@ -22,14 +29,20 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
       statusBadge.className = 'badge online';
       statusBadge.textContent = 'Advogado online';
       callBtn.disabled = false;
+      contactSection.style.display = 'block';
+      navContato.style.display = 'inline';
     } else if (online && busy) {
       statusBadge.className = 'badge busy';
       statusBadge.textContent = 'Advogado em chamada';
       callBtn.disabled = true;
+      contactSection.style.display = 'block';
+      navContato.style.display = 'inline';
     } else {
       statusBadge.className = 'badge';
       statusBadge.textContent = 'Advogado offline';
       callBtn.disabled = true;
+      contactSection.style.display = 'none';
+      navContato.style.display = 'none';
     }
   }
 
@@ -38,7 +51,7 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   callBtn.addEventListener('click', async () => {
     callBtn.disabled = true;
     setInfo('Chamando o advogado...');
-    socket.emit('request-call');
+    socket.emit('request-call', { mode: callModeSel.value });
   });
 
   endBtn.addEventListener('click', async () => {
@@ -54,11 +67,19 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
 
   socket.on('call-accepted', async ({ lawyerId }) => {
     currentLawyerId = lawyerId;
+    const mode = callModeSel.value;
+    if (mode === 'audio') videoArea.style.display = 'none'; else videoArea.style.display = 'grid';
     setInfo('Chamada aceita. Iniciando mídia...');
     try {
-      const res = await getMediaWithFallback();
+      let res;
+      if (mode === 'audio') {
+        const s = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        res = { stream: s };
+      } else {
+        res = await getMediaWithFallback();
+      }
       localStream = res.stream;
-      localVideo.srcObject = localStream;
+      if (mode !== 'audio') localVideo.srcObject = localStream;
 
       pc = createPeerConnection(lawyerId);
       localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
@@ -128,6 +149,7 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
     }
     localVideo.srcObject = null;
     remoteVideo.srcObject = null;
+    videoArea.style.display = 'grid';
     endBtn.disabled = true;
     callBtn.disabled = false;
     setInfo(message || 'Aguardando...');
@@ -156,5 +178,52 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   // Aviso de contexto inseguro
   if (isPotentiallyInsecureContext()) {
     setInfo('Aviso: contexto inseguro pode bloquear câmera/microfone. Use localhost ou HTTPS.');
+  }
+
+  // Chat
+  if (chatForm) {
+    chatForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const msg = chatInput.value.trim();
+      if (!msg) return;
+      appendChat('Você: ' + msg);
+      socket.emit('chat-from-client', { message: msg });
+      chatInput.value = '';
+    });
+  }
+
+  socket.on('chat-from-lawyer', ({ message }) => {
+    appendChat('Advogado: ' + message);
+  });
+
+  function appendChat(text) {
+    if (!chatMessages) return;
+    const div = document.createElement('div');
+    div.textContent = text;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  // Formulário de contato
+  const contactForm = document.getElementById('contactForm');
+  if (contactForm) {
+    contactForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const message = document.getElementById('message').value;
+      const status = document.getElementById('formStatus');
+      try {
+        const res = await fetch('/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, message })
+        });
+        status.textContent = res.ok ? 'Mensagem enviada!' : 'Falha ao enviar.';
+        contactForm.reset();
+      } catch {
+        status.textContent = 'Erro ao enviar.';
+      }
+    });
   }
 })();
