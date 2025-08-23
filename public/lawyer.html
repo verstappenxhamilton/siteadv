@@ -42,10 +42,58 @@
     <div class="panel" style="margin-top:14px;" id="chatPanel">
       <h3 style="margin-top:0;">Chat de Texto</h3>
       <div id="messages" class="chat-messages"></div>
+      <div id="quickReplies" class="actions quick-replies">
+        <button class="secondary quick-reply" data-msg="Olá, como posso ajudar?">Saudação</button>
+        <button class="secondary quick-reply" data-msg="Poderia fornecer mais detalhes?">Mais detalhes</button>
+        <button class="secondary quick-reply" data-msg="Vamos agendar uma reunião para discutir melhor?">Agendar reunião</button>
+        <button class="secondary quick-reply" data-msg="Estou analisando seu caso e retornarei em breve.">Analisar</button>
+      </div>
       <div class="chat-input">
         <input id="chatInput" type="text" placeholder="Digite sua mensagem" />
         <button id="sendBtn" class="primary" disabled>Enviar</button>
       </div>
+    </div>
+    <div class="panel" style="margin-top:14px;">
+      <h3 style="margin-top:0;">Configurações de IA</h3>
+      <form id="configForm" class="form-grid">
+        <div class="provider-field">
+          <span>Provedor</span>
+          <div class="provider-options">
+            <label class="provider-option"><input type="radio" name="provider" value="openai" checked/> OpenAI</label>
+            <label class="provider-option"><input type="radio" name="provider" value="anthropic"/> Anthropic</label>
+            <label class="provider-option"><input type="radio" name="provider" value="groq"/> Groq</label>
+            <label class="provider-option"><input type="radio" name="provider" value="gemini"/> Gemini</label>
+          </div>
+        </div>
+        <label>Max tokens <input type="number" name="max_output_tokens" value="200" /></label>
+        <label>Temperature <input type="number" step="0.1" name="temperature" value="0.7" /></label>
+        <label>Top P <input type="number" step="0.1" name="top_p" value="1" /></label>
+        <label>Prompt<br/>
+          <textarea name="prompt" rows="3">Você é um advogado virtual do escritório. Use frases curtas e educadas em português. Faça perguntas para entender o problema do cliente e identifique documentos importantes para cada caso. Se o assunto for usucapião, pergunte se prefere via extrajudicial ou judicial e se deseja saber o custo de cada opção, pesquisando nas tabelas de custas do TJMG quando solicitado. Quando tiver informações suficientes, finalize a conversa e inclua uma linha começando com "RELATORIO:" resumindo os dados para o advogado.</textarea>
+        </label>
+        <button type="submit" class="primary">Salvar Config</button>
+      </form>
+      <form id="keyForm" class="form-grid" style="margin-top:12px;">
+        <h4 style="margin:0;">API Keys</h4>
+        <label>OpenAI <input type="password" name="openai" /></label>
+        <label>Anthropic <input type="password" name="anthropic" /></label>
+        <label>Groq <input type="password" name="groq" /></label>
+        <label>Gemini <input type="password" name="gemini" /></label>
+        <button type="submit" class="secondary">Salvar Chaves</button>
+      </form>
+    </div>
+    <div class="panel" style="margin-top:14px;" id="aiPanel">
+      <h3 style="margin-top:0;">Assistente de IA</h3>
+      <div id="aiMessages" class="chat-messages"></div>
+      <div class="chat-input">
+        <input id="aiInput" type="text" placeholder="Pergunte à IA" />
+        <button id="aiSendBtn" class="secondary">Enviar</button>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:14px;" id="reportsPanel">
+      <h3 style="margin-top:0;">Relatórios</h3>
+      <button id="refreshReports" class="secondary">Atualizar</button>
+      <ul id="reportsList" class="reports-list"></ul>
     </div>
   </div>
 

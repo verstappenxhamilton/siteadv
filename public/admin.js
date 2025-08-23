@@ -1,8 +1,7 @@
 async function post(path, data) {
-  const key = prompt('Chave admin?');
   await fetch(path, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-admin-key': key },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   });
 }
@@ -29,7 +28,8 @@ document.getElementById('keyForm').addEventListener('submit', async (e) => {
   const data = {
     openai: fd.get('openai'),
     anthropic: fd.get('anthropic'),
-    groq: fd.get('groq')
+    groq: fd.get('groq'),
+    gemini: fd.get('gemini')
   };
   await post('/admin/keys', data);
   alert('Chaves salvas');
