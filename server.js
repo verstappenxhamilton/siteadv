@@ -32,8 +32,16 @@ const io = new Server(server, {
   cors: { origin: '*' }
 });
 
-// Servir arquivos estáticos
+// Middleware
 app.use(express.static('public'));
+app.use(express.json());
+
+// Endpoint simples para formulário de contato
+app.post('/contact', (req, res) => {
+  const { nome, email, mensagem } = req.body || {};
+  console.log('Contato recebido:', nome, email, mensagem);
+  res.sendStatus(200);
+});
 
 let lawyerSocket = null; // socket do advogado
 let busyWithClientId = null; // se estiver em ligação, guarda o id do cliente
@@ -63,7 +71,7 @@ io.on('connection', (socket) => {
   });
 
   // Cliente pede para iniciar uma chamada
-  socket.on('request-call', () => {
+  socket.on('request-call', ({ mode }) => {
     if (!lawyerSocket) {
       socket.emit('call-unavailable', { reason: 'offline' });
       return;
@@ -74,7 +82,7 @@ io.on('connection', (socket) => {
     }
     busyWithClientId = socket.id;
     broadcastLawyerStatus();
-    lawyerSocket.emit('incoming-call', { clientId: socket.id });
+    lawyerSocket.emit('incoming-call', { clientId: socket.id, mode });
   });
 
   // Advogado aceita a chamada
@@ -112,6 +120,16 @@ io.on('connection', (socket) => {
   });
   socket.on('webrtc-ice-candidate', ({ targetId, candidate }) => {
     if (targetId && candidate) io.to(targetId).emit('webrtc-ice-candidate', { from: socket.id, candidate });
+  });
+
+  // Mensagens de chat de texto
+  socket.on('chat-message', ({ targetId, message }) => {
+    if (!message) return;
+    if (lawyerSocket && socket.id === lawyerSocket.id) {
+      if (targetId) io.to(targetId).emit('chat-message', { from: 'lawyer', message });
+    } else {
+      if (lawyerSocket) lawyerSocket.emit('chat-message', { from: socket.id, message });
+    }
   });
 
   socket.on('disconnect', () => {
