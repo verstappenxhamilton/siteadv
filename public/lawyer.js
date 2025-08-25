@@ -16,6 +16,7 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   const aiSendBtn = document.getElementById('aiSendBtn');
   const reportsList = document.getElementById('reportsList');
   const refreshReports = document.getElementById('refreshReports');
+  const themeSelect = document.getElementById('themeSelect');
 
   const socket = io();
   socket.emit('identify', { role: 'lawyer' });
@@ -107,6 +108,11 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
         const modelInput = configForm.querySelector('input[name="model"]');
         if (modelInput) modelInput.value = defaultModels[selected];
       }
+      // Visual: destacar provider selecionado
+      configForm.querySelectorAll('.provider-option').forEach(label => {
+        const inp = label.querySelector('input[type="radio"]');
+        if (inp) label.classList.toggle('selected', inp.checked);
+      });
     }
 
     loadConfig().then(() => {
@@ -382,5 +388,40 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   if (refreshReports) {
     refreshReports.addEventListener('click', loadReports);
     loadReports();
+  }
+
+  // ====== Tema visual (seletor) ======
+  const THEME_CLASSES = ['theme-a','theme-b','theme-c','theme-d','theme-e','theme-f','theme-g'];
+  const themeMeta = document.querySelector('meta#themeColor');
+  const THEME_COLOR = {
+    'theme-a': '#F8FAFC',
+    'theme-b': '#0A66C2',
+    'theme-c': '#8B5E3C',
+    'theme-d': '#0B1220',
+    'theme-e': '#10B981',
+    'theme-f': '#7F1D1D',
+    'theme-g': '#111827'
+  };
+  function applyTheme(theme) {
+    const b = document.body;
+    THEME_CLASSES.forEach(t => b.classList.remove(t));
+    if (THEME_CLASSES.includes(theme)) b.classList.add(theme);
+    if (themeMeta && THEME_COLOR[theme]) themeMeta.setAttribute('content', THEME_COLOR[theme]);
+  }
+  // Inicializa com localStorage ou classe atual
+  try {
+    const saved = localStorage.getItem('ui.theme');
+    const initial = saved && THEME_CLASSES.includes(saved)
+      ? saved
+      : (THEME_CLASSES.find(t => document.body.classList.contains(t)) || 'theme-d');
+    applyTheme(initial);
+    if (themeSelect) themeSelect.value = initial;
+  } catch {}
+  if (themeSelect) {
+    themeSelect.addEventListener('change', (e) => {
+      const t = e.target.value;
+      applyTheme(t);
+      try { localStorage.setItem('ui.theme', t); } catch {}
+    });
   }
 })();

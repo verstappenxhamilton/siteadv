@@ -5,8 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Painel do Advogado</title>
   <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="/themes.css" />
+  <meta name="theme-color" content="#0B1220" id="themeColor">
 </head>
-<body>
+<body class="theme-d">
   <div class="container">
     <div class="header">
       <div class="brand">
@@ -18,6 +20,18 @@
       </div>
       <div class="actions">
         <a class="secondary" href="/" title="Página do Cliente">Página do Cliente</a>
+        <label for="themeSelect" style="display:flex; align-items:center; gap:6px;">
+          <span style="font-size:12px; color: var(--muted);">Tema</span>
+          <select id="themeSelect" class="theme-picker" aria-label="Selecionar tema visual">
+            <option value="theme-d">Escuro (Atual)</option>
+            <option value="theme-a">Claro Minimal</option>
+            <option value="theme-b">Corporate Blue</option>
+            <option value="theme-c">Warm Earth</option>
+            <option value="theme-e">Forest Green</option>
+            <option value="theme-f">Burgundy Classic</option>
+            <option value="theme-g">High Contrast</option>
+          </select>
+        </label>
       </div>
     </div>
 
@@ -55,7 +69,7 @@
     </div>
     <div class="panel" style="margin-top:14px;">
       <h3 style="margin-top:0;">Configurações de IA</h3>
-      <form id="configForm" class="form-grid">
+      <form id="configForm" class="form-grid two-col">
         <div class="provider-field">
           <span>Provedor</span>
           <div class="provider-options">

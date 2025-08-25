@@ -8,9 +8,32 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="/themes.css" />
   <meta name="description" content="Atendimento jurídico moderno com contato direto ao advogado.">
+  <meta name="theme-color" content="#0B1220" id="themeColor">
+  <style>
+    /* Overrides específicos do componente Contato na Home */
+    #callInterface.panel { padding-top: 84px; }
+    #callInterface.contact-panel { display: grid; grid-template-columns: 1fr; gap: 16px; position: relative; grid-template-areas: "videos" "actions" "info" "controls"; }
+    #callInterface .controls-block, #callInterface .videos { width: 100%; min-width: 0; }
+    #callInterface .videos { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; align-items: stretch; width: 100%; margin: 8px 0 0 0; justify-content: stretch; grid-area: videos; }
+    @media (max-width: 900px) { #callInterface .videos { grid-template-columns: 1fr; } }
+    #callInterface > .call-actions { display: flex; gap: 10px; justify-content: center; margin-top: 4px; grid-area: actions; }
+    #callInterface .mode-bar { left: 12px; right: auto; transform: none; }
+    #callInterface.chat-mode { grid-template-columns: 1fr !important; }
+    #callInterface.chat-mode #chatContainer { max-width: 100%; width: 100%; }
+    #callInterface.chat-mode .chat-messages { min-height: 320px; max-height: 480px; width: 100%; }
+    #callInterface.chat-mode .controls-block { width: 100%; }
+    #callInterface.chat-mode .chat-input { width: 100%; display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+    /* Remover qualquer texto auxiliar que crie coluna visualmente inútil */
+    #callInterface .contact-hint { display: none; }
+    #callInterface #info { grid-area: info; }
+    #callInterface .controls-block { grid-area: controls; }
+    /* Remover espaço lateral inútil: oculta bloco de controles em modo vídeo */
+    #callInterface:not(.chat-mode) .controls-block { display: none; }
+  </style>
 </head>
-<body>
+<body class="theme-d">
   <noscript>Por favor, ative o JavaScript para utilizar todas as funcionalidades.</noscript>
   <header class="site-header">
     <div class="container header">
@@ -45,19 +68,12 @@
     <div class="container">
       <h2>Contato</h2>
       <div id="callInterface" class="panel contact-panel hidden">
-        <div>
-          <p style="margin:0 0 14px 0; color: var(--muted);">Escolha como deseja falar com o advogado.</p>
-          <div class="mode-options">
-            <label><input type="radio" name="mode" value="video" checked>Vídeo + Áudio</label>
-            <label><input type="radio" name="mode" value="audio">Somente Áudio</label>
-            <label><input type="radio" name="mode" value="chat">Chat de Texto</label>
-          </div>
-          <div class="actions">
-            <button class="primary" id="callBtn">Ligar agora</button>
-            <button class="secondary" id="endBtn" disabled>Encerrar</button>
-            <button class="secondary" id="testBtn">Testar câmera/microfone</button>
-          </div>
-          <div id="info" class="footer">Aguardando...</div>
+        <div class="mode-bar" role="group" aria-label="Modo de comunicação">
+          <label><input type="radio" name="mode" value="video" checked>Vídeo + Áudio</label>
+          <label><input type="radio" name="mode" value="chat">Chat de Texto</label>
+        </div>
+        <div class="controls-block">
+          <p class="contact-hint" style="margin:0 0 8px 0; color: var(--muted); font-size:12px;">Escolha como deseja falar com o advogado.</p>
           <div id="chatContainer" class="chat hidden">
             <div id="messages" class="chat-messages"></div>
             <div class="chat-input">
@@ -68,15 +84,29 @@
           </div>
         </div>
         <div id="videoContainer" class="videos">
-          <div class="video-box">
+          <div class="video-box" id="remoteTile">
             <video id="remoteVideo" playsinline autoplay></video>
             <div class="muted-note">Remoto</div>
+            <div class="tile-controls" aria-label="Configurações de mídia remota">
+              <button type="button" class="tile-btn" id="remoteVideoToggle" aria-label="Mostrar/ocultar vídeo remoto">Vídeo</button>
+              <button type="button" class="tile-btn" id="remoteAudioToggle" aria-label="Ativar/desativar áudio remoto">Áudio</button>
+            </div>
           </div>
-          <div class="video-box">
+          <div class="video-box" id="localTile">
             <video id="localVideo" playsinline autoplay muted></video>
             <div class="muted-note">Você (mudo)</div>
+            <div class="tile-controls" aria-label="Configurações de sua mídia">
+              <button type="button" class="tile-btn" id="localVideoToggle" aria-label="Ativar/desativar sua câmera">Vídeo</button>
+              <button type="button" class="tile-btn" id="localAudioToggle" aria-label="Ativar/desativar seu microfone">Áudio</button>
+            </div>
           </div>
         </div>
+        <div class="actions call-actions">
+          <button class="primary" id="callBtn">Ligar agora</button>
+          <button class="secondary" id="endBtn" disabled>Encerrar</button>
+          <button class="secondary" id="testBtn">Testar câmera/microfone</button>
+        </div>
+        <div id="info" class="footer" style="text-align:center;">Aguardando...</div>
       </div>
     </div>
   </section>
@@ -95,6 +125,8 @@
       <p>Atuamos com dedicação e transparência para garantir a melhor defesa dos seus interesses. Utilizamos tecnologia de ponta para agilizar seu atendimento.</p>
     </div>
   </section>
+
+  <div class="section-divider" aria-hidden="true"></div>
 
   <section id="areas" class="areas-section reveal">
     <div class="container">
@@ -115,13 +147,14 @@
       </div>
     </div>
   </section>
-
+  <div class="section-divider" aria-hidden="true"></div>
   <section id="formulario" class="form-section reveal">
     <div class="container">
       <h2>Envie uma mensagem</h2>
       <form class="contact-form">
         <input type="text" name="nome" placeholder="Seu nome" required />
         <input type="email" name="email" placeholder="Seu e-mail" required />
+        <input type="tel" name="celular" placeholder="Seu celular" />
         <textarea name="mensagem" rows="5" placeholder="Sua mensagem" required></textarea>
         <button type="submit" class="primary">Enviar</button>
       </form>

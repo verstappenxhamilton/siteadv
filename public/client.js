@@ -17,8 +17,8 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   const sendBtn = document.getElementById('sendBtn');
   const testBtn = document.getElementById('testBtn');
   const modeRadios = document.querySelectorAll('input[name="mode"]');
-  const modeOptions = document.querySelector('.mode-options');
-  const actions = document.querySelector('.actions');
+  const modeBar = document.querySelector('.mode-bar');
+  const actions = document.querySelector('.call-actions');
   const backBtn = document.getElementById('backBtn');
 
   let currentMode = 'video';
@@ -73,20 +73,20 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
       endBtn.classList.add('hidden');
       testBtn.classList.add('hidden');
       actions.classList.add('hidden');
-      modeOptions.classList.add('hidden');
       setInfo('Converse por texto com o advogado.');
+      callInterface.classList.add('chat-mode');
       sendBtn.disabled = !lastOnline;
     } else {
       chatContainer.classList.add('hidden');
       actions.classList.remove('hidden');
-      modeOptions.classList.remove('hidden');
       callBtn.classList.remove('hidden');
       endBtn.classList.remove('hidden');
       testBtn.classList.remove('hidden');
-      videoContainer.classList.toggle('hidden', currentMode === 'audio');
-      callBtn.textContent = currentMode === 'audio' ? 'Ligar (áudio)' : 'Ligar agora';
+      videoContainer.classList.remove('hidden');
+      callBtn.textContent = 'Ligar agora';
       setInfo('Aguardando...');
       sendBtn.disabled = true;
+      callInterface.classList.remove('chat-mode');
     }
     callBtn.disabled = !(lastOnline && !lastBusy) || currentMode === 'chat';
   }));
@@ -94,7 +94,6 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   if (backBtn) {
     backBtn.addEventListener('click', () => {
       chatContainer.classList.add('hidden');
-      modeOptions.classList.remove('hidden');
       actions.classList.remove('hidden');
       currentMode = 'video';
       document.querySelector('input[name="mode"][value="video"]').checked = true;
@@ -111,7 +110,7 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   callBtn.addEventListener('click', async () => {
     callBtn.disabled = true;
     setInfo('Chamando o advogado...');
-    socket.emit('request-call', { mode: currentMode });
+    socket.emit('request-call', { mode: 'video' });
   });
 
   endBtn.addEventListener('click', async () => {
@@ -129,9 +128,12 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
     currentLawyerId = lawyerId;
     setInfo('Chamada aceita. Iniciando mídia...');
     try {
-      const res = await getMediaWithFallback(currentMode);
+      const res = await getMediaWithFallback('video');
       localStream = res.stream;
       localVideo.srcObject = localStream;
+      applyLocalPrefs();
+      applyRemotePrefs();
+      updateTileButtons();
 
       pc = createPeerConnection(lawyerId);
       localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
@@ -205,6 +207,42 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
     callBtn.disabled = false;
     setInfo(message || 'Aguardando...');
   }
+
+  // ====== Controles por tile (Vídeo/Áudio) ======
+  const localVideoToggle = document.getElementById('localVideoToggle');
+  const localAudioToggle = document.getElementById('localAudioToggle');
+  const remoteVideoToggle = document.getElementById('remoteVideoToggle');
+  const remoteAudioToggle = document.getElementById('remoteAudioToggle');
+  const remoteTile = document.getElementById('remoteTile');
+  let prefLocalVideo = true;
+  let prefLocalAudio = true;
+  let prefRemoteVideoVisible = true;
+  let prefRemoteAudio = true;
+
+  function applyLocalPrefs() {
+    if (!localStream) return;
+    localStream.getVideoTracks().forEach(t => t.enabled = prefLocalVideo);
+    localStream.getAudioTracks().forEach(t => t.enabled = prefLocalAudio);
+    if (prefLocalAudio) {
+      localVideo.muted = true; // evitar eco
+    }
+  }
+  function applyRemotePrefs() {
+    remoteVideo.muted = !prefRemoteAudio;
+    remoteTile.classList.toggle('video-hidden', !prefRemoteVideoVisible);
+  }
+  function updateTileButtons() {
+    if (localVideoToggle) localVideoToggle.classList.toggle('active', prefLocalVideo);
+    if (localAudioToggle) localAudioToggle.classList.toggle('active', prefLocalAudio);
+    if (remoteVideoToggle) remoteVideoToggle.classList.toggle('active', prefRemoteVideoVisible);
+    if (remoteAudioToggle) remoteAudioToggle.classList.toggle('active', prefRemoteAudio);
+  }
+  if (localVideoToggle) localVideoToggle.addEventListener('click', () => { prefLocalVideo = !prefLocalVideo; applyLocalPrefs(); updateTileButtons(); });
+  if (localAudioToggle) localAudioToggle.addEventListener('click', () => { prefLocalAudio = !prefLocalAudio; applyLocalPrefs(); updateTileButtons(); });
+  if (remoteVideoToggle) remoteVideoToggle.addEventListener('click', () => { prefRemoteVideoVisible = !prefRemoteVideoVisible; applyRemotePrefs(); updateTileButtons(); });
+  if (remoteAudioToggle) remoteAudioToggle.addEventListener('click', () => { prefRemoteAudio = !prefRemoteAudio; applyRemotePrefs(); updateTileButtons(); });
+
+  // (prefs aplicadas logo após captura de mídia)
 
   // Chat
   function appendMessage(sender, text) {

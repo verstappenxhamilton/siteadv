@@ -64,6 +64,7 @@ h2::after {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  padding: 8px 0;
 }
 
 .brand {
@@ -117,9 +118,9 @@ h2::after {
 
 .contact-panel {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1.1fr 1fr;
   gap: 16px;
-  align-items: center;
+  align-items: start;
 }
 
 .hero {
@@ -172,14 +173,20 @@ h2::after {
 
 .provider-option {
   background: #1f2937;
-  padding: 4px 8px;
-  border-radius: 6px;
-  display: flex;
+  padding: 6px 10px;
+  border-radius: 8px;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  border: 1px solid rgba(148,163,184,0.25);
 }
 
 .provider-option input { margin: 0; }
+
+.provider-option.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(148,163,184,0.15) inset;
+}
 
 .provider-field { display: flex; flex-direction: column; gap: 4px; }
 .provider-field span { font-size: 14px; }
@@ -195,36 +202,29 @@ h2::after {
 .reports-list li { margin-bottom: 6px; }
 
 button.primary {
-    background: linear-gradient(90deg, #22c55e, #16a34a);
-    color: #052e16;
-    border: none;
-  border-radius: 10px;
-  padding: 12px 16px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 14px;
   font-weight: 600;
-    cursor: pointer;
-    transition: filter 0.3s, transform 0.2s;
-  }
+  cursor: pointer;
+  transition: filter 0.2s, transform 0.15s;
+}
 
 button.secondary {
-    background: transparent;
-    border: 1px solid rgba(148, 163, 184, 0.4);
-    color: var(--text);
-    border-radius: 10px;
-    padding: 12px 16px;
-    cursor: pointer;
-    transition: color 0.3s, border-color 0.3s, transform 0.2s;
-  }
-
-button.primary:hover {
-  filter: brightness(1.1);
-  transform: translateY(-2px);
+  background: transparent;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, transform 0.15s;
 }
 
-button.secondary:hover {
-  color: var(--accent);
-  border-color: var(--accent);
-  transform: translateY(-2px);
-}
+button.primary:hover { filter: brightness(1.05); transform: translateY(-1px); }
+
+button.secondary:hover { color: var(--accent); border-color: var(--accent); transform: translateY(-1px); }
 
 button.danger { background: #ef4444; color: white; }
 
@@ -232,23 +232,28 @@ button.danger { background: #ef4444; color: white; }
 
 .mode-options {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: wrap;
   margin-bottom: 12px;
   font-size: 14px;
 }
-
-.mode-options label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.mode-options label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 6px 10px; border-radius: 999px; border: 1px solid rgba(148,163,184,0.35); background: transparent; color: var(--text); position: relative; }
+.mode-options input[type="radio"]{ position: absolute; opacity: 0; inset: 0; pointer-events: none; }
+.mode-options label:has(input:checked) { background: rgba(148,163,184,0.15); border-color: var(--accent); }
+.mode-options label:focus-within { outline: 2px solid var(--focus, #22D3EE); outline-offset: 2px; }
 
 .videos {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 16px;
+  align-items: stretch;
 }
 
 .video-box {
   position: relative;
-  aspect-ratio: 16/10;
+  width: 100%;
+  aspect-ratio: 16/9;
+  height: auto;
   background: #0b1224;
   border: 1px solid rgba(148, 163, 184, 0.15);
   border-radius: 12px;
@@ -324,11 +329,7 @@ button.danger { background: #ef4444; color: white; }
   max-width: 80%;
 }
 
-.chat-messages .msg.user {
-  background: var(--accent);
-  color: #052e16;
-  margin-left: auto;
-}
+.chat-messages .msg.user { background: var(--accent); color: #ffffff; margin-left: auto; }
 
 .chat-messages .msg.assistant {
   background: #334155;
@@ -336,11 +337,7 @@ button.danger { background: #ef4444; color: white; }
   margin-right: auto;
 }
 
-.chat-messages .msg.you {
-  background: var(--accent);
-  color: #052e16;
-  margin-left: auto;
-}
+.chat-messages .msg.you { background: var(--accent); color: #ffffff; margin-left: auto; }
 
 .chat-messages .msg.client {
   background: #334155;
@@ -394,10 +391,12 @@ button.danger { background: #ef4444; color: white; }
 .chat-input {
   display: flex;
   gap: 8px;
+  width: 100%;
 }
 
 .chat-input input {
-  flex: 1;
+  flex: 1 1 auto;
+  width: 100%;
   padding: 8px 12px;
   border-radius: 8px;
   border: 1px solid rgba(148, 163, 184, 0.4);
@@ -417,7 +416,20 @@ button.danger { background: #ef4444; color: white; }
   .contact-panel { grid-template-columns: 1fr; }
 }
 
+@media (max-width: 600px) {
+  .video-box { min-height: 44vh; }
+  .mode-options { justify-content: center; }
+}
+
 body { scroll-behavior: smooth; }
+
+/* Chat em largura total quando em modo chat */
+.contact-panel.chat-mode {
+  grid-template-areas: "controls" !important;
+  grid-template-columns: 1fr !important;
+}
+.contact-panel.chat-mode #chatContainer { max-width: 100%; }
+.contact-panel.chat-mode .chat-messages { min-height: 260px; max-height: 420px; }
 
 .site-header {
   position: sticky;
@@ -521,6 +533,24 @@ body { scroll-behavior: smooth; }
 
 .site-footer .social-links a:hover { color: var(--accent); }
 
+/* Divisória estilizada entre seções */
+.section-divider {
+  height: 1px;
+  margin: 24px auto;
+  max-width: 900px;
+  background: linear-gradient(90deg, transparent, rgba(148,163,184,0.35), transparent);
+}
+
+/* Form grid de duas colunas para telas grandes */
+@media (min-width: 900px) {
+  .form-grid.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 16px;
+  }
+  .form-grid.two-col .provider-field { grid-column: 1 / -1; }
+}
+
 .form-section {
   padding: 60px 16px;
 }
@@ -568,4 +598,117 @@ body { scroll-behavior: smooth; }
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Contato (Home) — distribuição interna e posicionamentos ===== */
+#callInterface.panel { padding-top: 56px; }
+.contact-panel { position: relative; }
+.contact-panel .controls-block, .contact-panel .videos { width: 100%; min-width: 0; }
+.contact-panel > .call-actions { grid-column: 1 / -1; display: flex; gap: 10px; justify-content: flex-end; }
+.contact-panel .controls-block,
+.contact-panel .videos { width: 100%; min-width: 0; }
+.contact-panel .controls-block { display: grid; align-content: start; gap: 12px; }
+
+/* Desktop: controles à esquerda, vídeos à direita */
+@media (min-width: 901px) {
+  .contact-panel {
+    display: grid;
+    grid-template-areas: "controls videos";
+    grid-template-columns: minmax(0,1fr) minmax(0,1.2fr);
+    gap: 20px;
+    align-items: start;
+  }
+  .contact-panel .controls-block { grid-area: controls; }
+  .contact-panel .videos { grid-area: videos; }
+}
+/* Mobile: vídeos primeiro, depois controles */
+@media (max-width: 900px) {
+  .contact-panel {
+    display: grid;
+    grid-template-areas: "videos" "controls";
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .videos { grid-template-columns: 1fr !important; }
+}
+
+/* Barra de modo (topo à direita do painel) */
+.mode-bar { position: absolute; top: 12px; left: 12px; right: auto; display: flex; gap: 8px; background: rgba(0,0,0,0.15); border: 1px solid rgba(148,163,184,0.25); padding: 6px 8px; border-radius: 999px; backdrop-filter: blur(6px); z-index: 3; }
+.theme-a .mode-bar, .theme-b .mode-bar, .theme-c .mode-bar { background: rgba(255,255,255,0.85); border-color: rgba(0,0,0,0.08); }
+.mode-bar label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 4px 8px; border-radius: 999px; border: 1px solid transparent; }
+.mode-bar input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; }
+.mode-bar label:has(input:checked) { background: rgba(148,163,184,0.15); border-color: var(--accent); }
+
+/* Controles por tile (sobreposição no canto superior esquerdo de cada vídeo) */
+.tile-controls { position: absolute; left: 8px; top: 8px; display: flex; gap: 6px; z-index: 2; }
+.tile-btn { background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 4px 8px; font-size: 12px; cursor: pointer; }
+.tile-btn.active { outline: 2px solid var(--accent); }
+.theme-a .tile-btn, .theme-b .tile-btn, .theme-c .tile-btn { background: rgba(255,255,255,0.85); color: #111; border-color: rgba(0,0,0,0.15); }
+.video-box.video-hidden video { opacity: 0; }
+
+/* ===== Contato (Home) — refinamento de layout ===== */
+.contact-panel { position: relative; }
+/* Desktop: controles à esquerda, vídeos à direita */
+@media (min-width: 901px) {
+  .contact-panel {
+    grid-template-areas: "controls videos";
+    grid-template-columns: minmax(0,1fr) minmax(0,1.2fr);
+    gap: 20px;
+  }
+  .contact-panel .controls-block { grid-area: controls; }
+  .contact-panel .videos { grid-area: videos; }
+}
+/* Mobile: vídeos primeiro, depois controles */
+@media (max-width: 900px) {
+  .contact-panel {
+    grid-template-areas: "videos" "controls";
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .videos { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .video-box { min-height: 38vh; }
+  #callInterface .call-actions { flex-wrap: wrap; }
+  #callInterface .call-actions button { flex: 1 1 100%; }
+}
+
+/* Barra de modo (topo à direita do painel) */
+.mode-bar { position: absolute; top: 12px; right: 12px; display: flex; gap: 8px; background: rgba(0,0,0,0.15); border: 1px solid rgba(148,163,184,0.25); padding: 6px 8px; border-radius: 999px; backdrop-filter: blur(6px); z-index: 2; }
+.theme-a .mode-bar, .theme-b .mode-bar, .theme-c .mode-bar { background: rgba(255,255,255,0.8); border-color: rgba(0,0,0,0.08); }
+.mode-bar label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 4px 8px; border-radius: 999px; border: 1px solid transparent; }
+.mode-bar input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; }
+.mode-bar label:has(input:checked) { background: rgba(148,163,184,0.15); border-color: var(--accent); }
+
+/* Controles por tile (sobreposição no canto superior esquerdo) */
+.tile-controls { position: absolute; left: 8px; top: 8px; display: flex; gap: 6px; z-index: 1; }
+.tile-btn { background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 4px 8px; font-size: 12px; cursor: pointer; }
+.tile-btn.active { outline: 2px solid var(--accent); }
+.theme-a .tile-btn, .theme-b .tile-btn, .theme-c .tile-btn { background: rgba(255,255,255,0.85); color: #111; border-color: rgba(0,0,0,0.15); }
+.video-box.video-hidden video { opacity: 0; }
+
+/* ===== Contato (Home) — refinamento de layout ===== */
+/* Desktop: controles à esquerda, vídeos à direita */
+@media (min-width: 901px) {
+  .contact-panel {
+    grid-template-areas: "controls videos";
+    grid-template-columns: 1fr 1.2fr;
+    gap: 20px;
+  }
+}
+.contact-panel .controls-block { display: grid; align-content: start; gap: 12px; }
+.contact-panel .videos { grid-area: videos; }
+.contact-panel .controls-block { grid-area: controls; }
+#callInterface .call-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+#callInterface .call-actions button { min-width: 140px; }
+
+/* Mobile: vídeos primeiro, depois controles */
+@media (max-width: 900px) {
+  .contact-panel { grid-template-areas: "videos" "controls"; grid-template-columns: 1fr; gap: 14px; }
+  .videos { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .video-box { min-height: 48vh; }
+  #callInterface .call-actions { flex-wrap: wrap; }
+  #callInterface .call-actions button { flex: 1 1 100%; }
 }
