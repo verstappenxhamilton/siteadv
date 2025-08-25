@@ -110,6 +110,49 @@
       <button id="refreshReports" class="secondary">Atualizar</button>
       <ul id="reportsList" class="reports-list"></ul>
     </div>
+
+    <div class="panel" style="margin-top:14px;" id="editorPanel">
+      <h3 style="margin-top:0;">Editor da Página Inicial</h3>
+      <form id="siteEditor" class="form-grid two-col">
+        <label>Título da Marca
+          <input type="text" name="brandingTitle" placeholder="Ex.: Clínica Exemplo" />
+        </label>
+        <label>Cor de Destaque
+          <input type="color" name="accentColor" value="#22c55e" />
+        </label>
+        <label>Título (Hero)
+          <input type="text" name="heroTitle" placeholder="Título principal" />
+        </label>
+        <label>Subtítulo (Hero)
+          <input type="text" name="heroSubtitle" placeholder="Subtítulo" />
+        </label>
+        <label style="grid-column:1/-1;">Texto Sobre (opcional)
+          <textarea name="aboutText" rows="3" placeholder="Se vazio, mantém o texto atual"></textarea>
+        </label>
+
+        <div style="grid-column:1/-1; display:grid; gap:8px;">
+          <div style="font-weight:600;">Ordem das Seções</div>
+          <div id="sectionsList" style="display:flex; flex-wrap:wrap; gap:8px;">
+            <!-- itens gerados via JS -->
+          </div>
+        </div>
+        <div style="grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;">
+          <label style="display:flex;align-items:center;gap:6px;"><input type="checkbox" name="vis_hero" checked />Hero</label>
+          <label style="display:flex;align-items:center;gap:6px;"><input type="checkbox" name="vis_sobre" checked />Sobre</label>
+          <label style="display:flex;align-items:center;gap:6px;"><input type="checkbox" name="vis_areas" checked />Áreas</label>
+          <label style="display:flex;align-items:center;gap:6px;"><input type="checkbox" name="vis_contato" checked />Contato</label>
+          <label style="display:flex;align-items:center;gap:6px;"><input type="checkbox" name="vis_formulario" checked />Formulário</label>
+          <label style="display:flex;align-items:center;gap:6px;"><input type="checkbox" name="vis_secretaria" checked />Secretária</label>
+        </div>
+
+        <div style="grid-column:1/-1; display:flex; gap:8px;">
+          <button id="saveSite" class="primary" type="button">Salvar</button>
+          <button id="previewSite" class="secondary" type="button">Pré-visualizar</button>
+          <button id="resetSite" class="secondary" type="button">Reverter</button>
+        </div>
+      </form>
+      <div class="footer" id="editorStatus"></div>
+    </div>
   </div>
 
   <div class="incoming" id="incoming">

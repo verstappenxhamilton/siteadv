@@ -67,6 +67,28 @@ const sessions = {};
 const reports = [];
 const intakes = {};
 
+// Site config (layout/conteúdo) com persistência simples em arquivo
+const siteConfigPath = path.join(__dirname, 'site.config.json');
+let siteConfig = {
+  brandingTitle: 'Escritório de Advocacia Online',
+  heroTitle: 'Defendendo seus direitos com excelência',
+  heroSubtitle: 'Atendimento jurídico moderno, humano e eficiente.',
+  aboutText: null, // se null, mantém o texto atual do HTML
+  accentColor: null, // hex; se null usa do tema
+  theme: null, // e.g. 'theme-a' | 'theme-b' ...; se null mantém
+  sectionsOrder: ['hero','sobre','areas','contato','formulario','secretaria'],
+  visibility: { hero:true, sobre:true, areas:true, contato:true, formulario:true, secretaria:true }
+};
+try {
+  if (fs.existsSync(siteConfigPath)) {
+    const raw = fs.readFileSync(siteConfigPath, 'utf-8');
+    const parsed = JSON.parse(raw);
+    siteConfig = { ...siteConfig, ...parsed };
+  }
+} catch (e) {
+  console.warn('Falha ao carregar site.config.json:', e.message);
+}
+
 // Endpoint simples para formulário de contato
 app.post('/contact', (req, res) => {
   const { nome, email, mensagem } = req.body || {};
@@ -272,6 +294,30 @@ app.get('/admin/keys', (req, res) => {
 
 app.get('/admin/reports', (req, res) => {
   res.json(reports);
+});
+
+// Endpoints de configuração do site (Home)
+app.get('/admin/site-config', (req, res) => {
+  res.json(siteConfig);
+});
+
+app.post('/admin/site-config', (req, res) => {
+  const body = req.body || {};
+  // validação leve
+  const allowThemes = ['theme-a','theme-b','theme-c','theme-d','theme-e','theme-f','theme-g', null];
+  if (body.theme && !allowThemes.includes(body.theme)) {
+    return res.status(400).json({ error: 'invalid_theme' });
+  }
+  if (body.sectionsOrder && !Array.isArray(body.sectionsOrder)) {
+    return res.status(400).json({ error: 'invalid_sections' });
+  }
+  siteConfig = { ...siteConfig, ...body };
+  try {
+    fs.writeFileSync(siteConfigPath, JSON.stringify(siteConfig, null, 2));
+  } catch (e) {
+    console.warn('Falha ao salvar site.config.json:', e.message);
+  }
+  res.json({ ok: true, siteConfig });
 });
 
 let lawyerSocket = null; // socket do advogado

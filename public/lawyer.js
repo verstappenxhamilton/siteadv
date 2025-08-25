@@ -1,4 +1,4 @@
-import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureContext } from './media.js';
+﻿import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureContext } from './media.js';
 
 (() => {
   const info = document.getElementById('info');
@@ -17,6 +17,13 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   const reportsList = document.getElementById('reportsList');
   const refreshReports = document.getElementById('refreshReports');
   const themeSelect = document.getElementById('themeSelect');
+  // Editor
+  const siteEditor = document.getElementById('siteEditor');
+  const editorStatus = document.getElementById('editorStatus');
+  const sectionsList = document.getElementById('sectionsList');
+  const saveSiteBtn = document.getElementById('saveSite');
+  const previewSiteBtn = document.getElementById('previewSite');
+  const resetSiteBtn = document.getElementById('resetSite');
 
   const socket = io();
   socket.emit('identify', { role: 'lawyer' });
@@ -132,7 +139,7 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
       configForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         await saveConfig();
-        alert('Configuração salva');
+        alert('ConfiguraÃ§Ã£o salva');
       });
     }
 
@@ -171,7 +178,7 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
     currentClientId = pendingClientId;
     pendingClientId = null;
     incoming.style.display = 'none';
-    setInfo('Preparando mídia...');
+    setInfo('Preparando mÃ­dia...');
     try {
       const res = await getMediaWithFallback(pendingMode);
       localStream = res.stream;
@@ -191,7 +198,7 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
 
   hangupBtn.addEventListener('click', () => {
     if (currentClientId) socket.emit('end-call', { targetId: currentClientId });
-    endCall('Você encerrou a chamada.');
+    endCall('VocÃª encerrou a chamada.');
   });
 
   // Chat
@@ -206,7 +213,7 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   function sendChat() {
     const msg = chatInput.value.trim();
     if (!msg || !currentChatClientId) return;
-    appendMessage(messages, 'you', `Você: ${msg}`);
+    appendMessage(messages, 'you', `VocÃª: ${msg}`);
     socket.emit('chat-message', { targetId: currentChatClientId, message: msg });
     chatInput.value = '';
   }
@@ -231,13 +238,13 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
     sendBtn.disabled = false;
     askAi(from, message).then(data => {
       if (data.reply) {
-        appendMessage(aiMessages, 'ai', `Sugestão: ${data.reply}`);
+        appendMessage(aiMessages, 'ai', `SugestÃ£o: ${data.reply}`);
       } else if (data.error) {
         const map = {
           missing_api_key: 'Chave de API ausente.',
           limit_reached: 'Limite de uso atingido.',
           msg_too_long: 'Mensagem muito longa.',
-          session_closed: 'Sessão encerrada.'
+          session_closed: 'SessÃ£o encerrada.'
         };
         appendMessage(aiMessages, 'error', `Erro IA: ${map[data.error] || data.message || data.error}`);
       }
@@ -282,7 +289,7 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
     };
     peer.onconnectionstatechange = () => {
       if (['failed', 'disconnected', 'closed'].includes(peer.connectionState)) {
-        endCall('Conexão encerrada.');
+        endCall('ConexÃ£o encerrada.');
       }
     };
     return peer;
@@ -305,7 +312,7 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
     setInfo(message || 'Aguardando chamadas...');
   }
 
-  // Teste manual de mídia
+  // Teste manual de mÃ­dia
   const testBtn = document.getElementById('testBtn');
   if (testBtn) {
     testBtn.addEventListener('click', async () => {
@@ -317,7 +324,7 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
         setTimeout(() => {
           tmp.getTracks().forEach(t => t.stop());
           if (localStream) localVideo.srcObject = localStream; else localVideo.srcObject = null;
-          setInfo('Teste concluído.');
+          setInfo('Teste concluÃ­do.');
         }, 3000);
       } catch (e) {
         setInfo(explainGetUserMediaError(e));
@@ -327,14 +334,14 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
 
   // Aviso de contexto inseguro
   if (isPotentiallyInsecureContext()) {
-    setInfo('Aviso: contexto inseguro pode bloquear câmera/microfone. Use localhost ou HTTPS.');
+    setInfo('Aviso: contexto inseguro pode bloquear cÃ¢mera/microfone. Use localhost ou HTTPS.');
   }
 
   document.querySelectorAll('.quick-reply').forEach(btn => {
     btn.addEventListener('click', () => {
       const msg = btn.dataset.msg;
       if (!msg || !currentChatClientId) return;
-      appendMessage(messages, 'you', `Você: ${msg}`);
+      appendMessage(messages, 'you', `VocÃª: ${msg}`);
       socket.emit('chat-message', { targetId: currentChatClientId, message: msg });
     });
   });
@@ -342,7 +349,7 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   function sendAi() {
     const msg = aiInput.value.trim();
     if (!msg) return;
-    appendMessage(aiMessages, 'you', `Você: ${msg}`);
+    appendMessage(aiMessages, 'you', `VocÃª: ${msg}`);
     aiInput.value = '';
     askAi('lawyer-assistant', msg).then(data => {
       if (data.reply) {
@@ -352,7 +359,7 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
           missing_api_key: 'Chave de API ausente.',
           limit_reached: 'Limite de uso atingido.',
           msg_too_long: 'Mensagem muito longa.',
-          session_closed: 'Sessão encerrada.'
+          session_closed: 'SessÃ£o encerrada.'
         };
         appendMessage(aiMessages, 'error', `Erro IA: ${map[data.error] || data.message || data.error}`);
       }
@@ -424,4 +431,109 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
       try { localStorage.setItem('ui.theme', t); } catch {}
     });
   }
+
+  // ====== Editor de Site (Home) ======
+  async function fetchSiteConfig() {
+    const res = await fetch('/admin/site-config');
+    return res.json();
+  }
+  function renderSectionsOrder(order) {
+    if (!sectionsList) return;
+    sectionsList.innerHTML = '';
+    const labels = { hero:'Hero', sobre:'Sobre', areas:'Ãreas', contato:'Contato', formulario:'FormulÃ¡rio', secretaria:'SecretÃ¡ria' };
+    order.forEach((key, idx) => {
+      const wrap = document.createElement('div');
+      wrap.style.display = 'flex'; wrap.style.alignItems = 'center'; wrap.style.gap = '6px';
+      wrap.style.border = '1px solid rgba(148,163,184,0.35)'; wrap.style.borderRadius = '8px'; wrap.style.padding = '6px 8px';
+      wrap.dataset.key = key;
+      const span = document.createElement('span'); span.textContent = labels[key] || key;
+      const up = document.createElement('button'); up.type='button'; up.className='secondary'; up.textContent='â†‘'; up.style.padding='4px 8px';
+      const down = document.createElement('button'); down.type='button'; down.className='secondary'; down.textContent='â†“'; down.style.padding='4px 8px';
+      up.addEventListener('click', ()=> moveSection(key, -1));
+      down.addEventListener('click', ()=> moveSection(key, +1));
+      wrap.appendChild(span); wrap.appendChild(up); wrap.appendChild(down);
+      sectionsList.appendChild(wrap);
+    });
+  }
+  function moveSection(key, delta) {
+    const order = getCurrentOrder();
+    const i = order.indexOf(key);
+    if (i === -1) return;
+    const j = i + delta;
+    if (j < 0 || j >= order.length) return;
+    [order[i], order[j]] = [order[j], order[i]];
+    renderSectionsOrder(order);
+  }
+  function getCurrentOrder() {
+    return Array.from(sectionsList.querySelectorAll('[data-key]')).map(el=>el.dataset.key);
+  }
+  function fillEditor(cfg) {
+    if (!siteEditor) return;
+    siteEditor.querySelector('input[name="brandingTitle"]').value = cfg.brandingTitle || '';
+    siteEditor.querySelector('input[name="accentColor"]').value = cfg.accentColor || '#22c55e';
+    siteEditor.querySelector('input[name="heroTitle"]').value = cfg.heroTitle || '';
+    siteEditor.querySelector('input[name="heroSubtitle"]').value = cfg.heroSubtitle || '';
+    siteEditor.querySelector('textarea[name="aboutText"]').value = cfg.aboutText || '';
+    const vis = cfg.visibility || {};
+    siteEditor.querySelector('input[name="vis_hero"]').checked = !!vis.hero;
+    siteEditor.querySelector('input[name="vis_sobre"]').checked = !!vis.sobre;
+    siteEditor.querySelector('input[name="vis_areas"]').checked = !!vis.areas;
+    siteEditor.querySelector('input[name="vis_contato"]').checked = !!vis.contato;
+    siteEditor.querySelector('input[name="vis_formulario"]').checked = !!vis.formulario;
+    siteEditor.querySelector('input[name="vis_secretaria"]').checked = !!vis.secretaria;
+    renderSectionsOrder(cfg.sectionsOrder || ['hero','sobre','areas','contato','formulario','secretaria']);
+  }
+  async function loadSiteConfig() {
+    try {
+      const cfg = await fetchSiteConfig();
+      fillEditor(cfg);
+      if (cfg.theme) { try { applyTheme(cfg.theme); if (themeSelect) themeSelect.value = cfg.theme; localStorage.setItem('ui.theme', cfg.theme); } catch {} }
+    } catch (e) { console.warn('site-config load error', e); }
+  }
+  loadSiteConfig();
+
+  async function saveSiteConfig() {
+    if (!siteEditor) return;
+    const body = {
+      brandingTitle: siteEditor.querySelector("input[name=\"brandingTitle\"]").value.trim() || null,
+      accentColor: siteEditor.querySelector("input[name=\"accentColor\"]").value || null,
+      heroTitle: siteEditor.querySelector("input[name=\"heroTitle\"]").value.trim() || null,
+      heroSubtitle: siteEditor.querySelector("input[name=\"heroSubtitle\"]").value.trim() || null,
+      aboutText: siteEditor.querySelector("textarea[name=\"aboutText\"]").value.trim() || null,
+      sectionsOrder: getCurrentOrder(),
+      visibility: {
+        hero: siteEditor.querySelector("input[name=\"vis_hero\"]").checked,
+        sobre: siteEditor.querySelector("input[name=\"vis_sobre\"]").checked,
+        areas: siteEditor.querySelector("input[name=\"vis_areas\"]").checked,
+        contato: siteEditor.querySelector("input[name=\"vis_contato\"]").checked,
+        formulario: siteEditor.querySelector("input[name=\"vis_formulario\"]").checked,
+        secretaria: siteEditor.querySelector("input[name=\"vis_secretaria\"]").checked,
+      },
+      theme: (typeof themeSelect !== 'undefined' && themeSelect) ? themeSelect.value : null
+    };
+    try {
+      const res = await fetch('/admin/site-config', {
+        method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify(body)
+      });
+      const resp = await res.json();
+      editorStatus.textContent = res.ok ? 'Configurações salvas.' : (`Erro: ${resp.error || 'desconhecido'}`);
+    } catch (e) {
+      editorStatus.textContent = 'Erro ao salvar.';
+    }
+  }
+
+  if (saveSiteBtn) saveSiteBtn.addEventListener('click', saveSiteConfig);
+  if (previewSiteBtn) previewSiteBtn.addEventListener('click', () => {
+    // Apenas abre a Home; as configs sÃ£o aplicadas ao carregar
+    window.open('/', '_blank');
+  });
+  if (resetSiteBtn) resetSiteBtn.addEventListener('click', async () => {
+    await fetch('/admin/site-config', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
+      brandingTitle:null, heroTitle:null, heroSubtitle:null, aboutText:null, accentColor:null,
+      sectionsOrder: ['hero','sobre','areas','contato','formulario','secretaria'],
+      visibility: { hero:true, sobre:true, areas:true, contato:true, formulario:true, secretaria:true }
+    })});
+    loadSiteConfig(); editorStatus.textContent='Revertido.';
+  });
 })();
+
