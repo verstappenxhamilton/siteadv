@@ -173,7 +173,7 @@ app.post('/api/questions', chatLimiter, async (req, res) => {
     return res.status(400).json({ error: 'missing_api_key' });
   }
   try {
-    const sys = 'Você gera perguntas em formato JSON. Responda somente com um array JSON de objetos {"id","pergunta","tipo"}. O campo tipo deve ser "text", "number" ou "textarea".';
+    const sys = 'Você gera perguntas em formato JSON. Responda somente com um array JSON de objetos {"id","pergunta","tipo","opcoes"}. O campo tipo deve ser "text", "number", "date" ou "textarea". Se houver alternativas pré-definidas, inclua "opcoes" como um array de strings curtas.';
     const messages = [
       { role: 'system', content: sys },
       { role: 'user', content: `Resumo: ${summary}. Liste as perguntas necessárias para orientar o caso.` }
