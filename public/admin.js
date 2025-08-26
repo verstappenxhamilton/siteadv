@@ -1,15 +1,12 @@
 // Tema (Admin): aplica preferência salva sem adicionar seletor
 (function applySavedTheme(){
-  const THEME_CLASSES = ['theme-a','theme-b','theme-c','theme-d','theme-e','theme-f','theme-g'];
+  const THEME_CLASSES = ['theme-a','theme-b','theme-c','theme-d'];
   const themeMeta = document.querySelector('meta#themeColor');
   const THEME_COLOR = {
     'theme-a': '#F8FAFC',
     'theme-b': '#0A66C2',
     'theme-c': '#8B5E3C',
-    'theme-d': '#0B1220',
-    'theme-e': '#10B981',
-    'theme-f': '#7F1D1D',
-    'theme-g': '#111827'
+    'theme-d': '#0B1220'
   };
   function applyTheme(theme){
     const b = document.body; THEME_CLASSES.forEach(t=>b.classList.remove(t));

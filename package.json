@@ -9,11 +9,11 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "dotenv": "^17.2.1",
     "express": "^4.19.2",
-    "socket.io": "^4.7.5",
     "express-rate-limit": "^6.10.0",
     "node-fetch": "^2.6.7",
+    "socket.io": "^4.7.5",
     "zod": "^3.22.4"
   }
 }
-

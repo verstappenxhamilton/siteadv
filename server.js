@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const https = require('https');
@@ -47,13 +48,13 @@ const adminConfig = {
   provider: 'openai',
   parameters: {
     model: 'gpt-4o-mini',
-    max_output_tokens: 200,
-    temperature: 0.7,
+    max_output_tokens: 1024,
+    temperature: 0.8,
     top_p: 1,
     stop_sequences: []
   },
   prompt: 'Você é um advogado virtual do escritório. Responda em português formal e de maneira breve. Ao receber o resumo do cliente, gere perguntas objetivas para coletar dados e verificar documentos, incluindo opções como usucapião judicial ou extrajudicial com seus respectivos custos no TJMG quando cabível. Depois das respostas do cliente, forneça uma orientação final e encerre com uma linha "RELATORIO:" resumindo as informações para o advogado.',
-  limits: { maxMessages: 20, maxChars: 1000 },
+  limits: { maxMessages: 20, maxChars: 2000 },
   features: { upload: false, ocr: false },
   apiKeys: {
     openai: process.env.OPENAI_API_KEY || '',
@@ -67,33 +68,41 @@ const sessions = {};
 const reports = [];
 const intakes = {};
 
-// Site config (layout/conteúdo) com persistência simples em arquivo
-const siteConfigPath = path.join(__dirname, 'site.config.json');
-let siteConfig = {
-  brandingTitle: 'Escritório de Advocacia Online',
-  heroTitle: 'Defendendo seus direitos com excelência',
-  heroSubtitle: 'Atendimento jurídico moderno, humano e eficiente.',
-  aboutText: null, // se null, mantém o texto atual do HTML
-  accentColor: null, // hex; se null usa do tema
-  theme: null, // e.g. 'theme-a' | 'theme-b' ...; se null mantém
-  sectionsOrder: ['hero','sobre','areas','contato','formulario','secretaria'],
-  visibility: { hero:true, sobre:true, areas:true, contato:true, formulario:true, secretaria:true }
-};
-try {
-  if (fs.existsSync(siteConfigPath)) {
-    const raw = fs.readFileSync(siteConfigPath, 'utf-8');
-    const parsed = JSON.parse(raw);
-    siteConfig = { ...siteConfig, ...parsed };
-  }
-} catch (e) {
-  console.warn('Falha ao carregar site.config.json:', e.message);
-}
-
 // Endpoint simples para formulário de contato
 app.post('/contact', (req, res) => {
   const { nome, email, mensagem } = req.body || {};
   console.log('Contato recebido:', nome, email, mensagem);
   res.sendStatus(200);
+});
+
+// Endpoints for content management
+app.get('/api/content', (req, res) => {
+  const contentPath = path.join(__dirname, 'public', 'content.json');
+  fs.readFile(contentPath, 'utf8', (err, data) => {
+    if (err) {
+      console.error('Error reading content.json:', err);
+      return res.status(500).json({ error: 'failed_to_read_content' });
+    }
+    res.json(JSON.parse(data));
+  });
+});
+
+app.post('/api/content', (req, res) => {
+  const contentPath = path.join(__dirname, 'public', 'content.json');
+  const newContent = req.body;
+
+  // Basic validation
+  if (!newContent || typeof newContent !== 'object') {
+    return res.status(400).json({ error: 'invalid_content' });
+  }
+
+  fs.writeFile(contentPath, JSON.stringify(newContent, null, 2), 'utf8', (err) => {
+    if (err) {
+      console.error('Error writing to content.json:', err);
+      return res.status(500).json({ error: 'failed_to_write_content' });
+    }
+    res.json({ ok: true });
+  });
 });
 
 const messageSchema = z.object({
@@ -149,8 +158,12 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
     if (idx !== -1) {
       clientReply = reply.slice(0, idx).trim();
       const reportText = reply.slice(idx + 'RELATORIO:'.length).trim();
-      reports.push({ sessionId, text: reportText, timestamp: Date.now() });
-      session.done = true;
+      const newReport = { sessionId, text: reportText, timestamp: Date.now() };
+      reports.push(newReport);
+      if (lawyerSocket) {
+        lawyerSocket.emit('new-report', newReport);
+      }
+      intake.stage = 'done';
     }
     res.json({ reply: clientReply });
   } catch (e) {
@@ -173,25 +186,42 @@ app.post('/api/questions', chatLimiter, async (req, res) => {
     return res.status(400).json({ error: 'missing_api_key' });
   }
   try {
-    const sys = 'Você gera perguntas em formato JSON. Responda somente com um array JSON de objetos {"id","pergunta","tipo"}. O campo tipo deve ser "text", "number" ou "textarea".';
+    const sys = `Você gera um formulário em JSON. Responda **apenas com o JSON**. O JSON deve ter uma chave 'questions', que é um array de objetos. Cada objeto representa uma pergunta e tem os seguintes campos:
+- 'id': um identificador único para a pergunta (string).
+- 'text': o texto da pergunta (string).
+- 'type': o tipo de input ('text', 'number', 'date', 'buttons', 'checklist').
+- 'options' (opcional): um array de strings para 'type: "buttons"' ou 'type: "checklist"'.
+
+Exemplo:
+{
+  "questions": [
+    { "id": "nome", "text": "Qual é o seu nome?", "type": "text" },
+    { "id": "valor", "text": "Qual o valor do imóvel?", "type": "number" },
+    { "id": "data", "text": "Qual a data da posse?", "type": "date" },
+    { "id": "tipo_usucapiao", "text": "O tipo de usucapião é judicial ou extrajudicial?", "type": "buttons", "options": ["Judicial", "Extrajudicial"] }
+  ]
+}`;
     const messages = [
       { role: 'system', content: sys },
-      { role: 'user', content: `Resumo: ${summary}. Liste as perguntas necessárias para orientar o caso.` }
+      { role: 'user', content: `Resumo do cliente: ${summary}. Gere as perguntas.` }
     ];
-    const reply = await generate(adminConfig.provider, apiKey, messages, adminConfig.parameters);
+    const reply = await generate(adminConfig.provider, apiKey, messages, { ...adminConfig.parameters, max_output_tokens: 1500 });
     const cleaned = reply.replace(/```(json)?|```/gi, '').trim();
-    let questions;
+    let questionsData;
     try {
-      questions = JSON.parse(cleaned);
-      if (!Array.isArray(questions)) throw new Error('not_array');
+      questionsData = JSON.parse(cleaned);
+      if (!questionsData.questions || !Array.isArray(questionsData.questions)) throw new Error('invalid_json_structure');
     } catch (err) {
-      console.warn('invalid questions JSON from provider:', cleaned, err.message);
-      questions = [
-        { id: 'detalhes', pergunta: 'Poderia fornecer mais detalhes?', tipo: 'textarea' }
-      ];
+      console.warn('Invalid questions JSON from provider:', cleaned, err.message);
+      // Fallback para uma pergunta simples em caso de erro de parsing
+      questionsData = {
+        questions: [
+          { id: 'detalhes', text: 'Poderia fornecer mais detalhes sobre o seu caso?', type: 'textarea' }
+        ]
+      };
     }
-    intakes[sessionId] = { summary, questions, stage: 'questions' };
-    res.json({ questions });
+    intakes[sessionId] = { summary, questions: questionsData.questions, stage: 'questions', interactionCount: 1 };
+    res.json(questionsData);
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: e.message || 'provider_error' });
@@ -208,27 +238,115 @@ app.post('/api/answers', chatLimiter, async (req, res) => {
   if (!intake || intake.stage !== 'questions') {
     return res.status(400).json({ error: 'invalid_session' });
   }
+
+  // Increment interaction count
+  intake.interactionCount = (intake.interactionCount || 1) + 1;
+
   const apiKey = adminConfig.apiKeys[adminConfig.provider];
   if (!apiKey) {
     return res.status(400).json({ error: 'missing_api_key' });
   }
   try {
-    const answersText = Object.entries(answers).map(([k, v]) => `${k}: ${v}`).join('\n');
-    const userText = `Resumo: ${intake.summary}\nRespostas:\n${answersText}\nForneça orientação final e finalize com RELATORIO:`;
+    const answersText = Object.entries(answers).map(([k, v]) => `- ${intake.questions.find(q => q.id === k)?.text || k}: ${v}`).join('\n');
+
+    // Validação de respostas com IA
+    for (const [key, value] of Object.entries(answers)) {
+      const question = intake.questions.find(q => q.id === key);
+      // Validar apenas campos de texto abertos
+      if (question && (question.type === 'text' || question.type === 'textarea')) {
+        const validationPrompt = `A seguir, uma resposta de um usuário a uma pergunta. A resposta parece sem sentido, evasiva ou um texto aleatório? Responda apenas com 'sim' ou 'não'. Pergunta: "${question.text}" Resposta: "${value}"`;
+        const validationMessages = [{ role: 'user', content: validationPrompt }];
+        const validationResult = await generate(adminConfig.provider, apiKey, validationMessages, { ...adminConfig.parameters, max_output_tokens: 5, temperature: 0.1 });
+
+        if (validationResult.toLowerCase().includes('sim')) {
+          console.log(`Gibberish detected for session ${sessionId}. Answer: ${value}`);
+          const reportText = `O usuário forneceu uma resposta inválida ou sem sentido para a pergunta "${question.text}".\nResposta do usuário: "${value}"\n\nSessão encerrada.`;
+          const newReport = { sessionId, text: reportText, timestamp: Date.now() };
+          reports.push(newReport);
+          if (lawyerSocket) {
+            lawyerSocket.emit('new-report', newReport);
+          }
+          intake.stage = 'done';
+          return res.json({ reply: 'Suas respostas parecem inválidas. A sessão foi encerrada. Um relatório foi enviado ao advogado.' });
+        }
+      }
+    }
+
+    let userText;
+    // Check if interaction limit is reached
+    if (intake.interactionCount >= 3) {
+      userText = `O cliente forneceu as seguintes respostas para o resumo "${intake.summary}":
+${answersText}
+
+Esta é a última interação. Você DEVE fornecer uma orientação final concisa e profissional com base em todas as informações coletadas. NÃO faça mais perguntas. Finalize com a linha "RELATORIO:" e um resumo estruturado de todas as informações.`;
+    } else {
+      userText = `O cliente forneceu as seguintes respostas para o resumo "${intake.summary}":
+${answersText}
+
+Sua tarefa é analisar as respostas. Existem duas possibilidades:
+1.  **Informações Suficientes**: Se você tiver todos os dados para dar uma orientação final, escreva essa orientação e, em seguida, adicione a linha "RELATORIO:" com o resumo completo.
+2.  **Informações Insuficientes**: Se você precisar de mais informações, gere um novo formulário de perguntas em JSON. A resposta DEVE ser **APENAS o JSON**, sem nenhum outro texto antes ou depois. O formato do JSON deve ser o mesmo de antes: { "questions": [ ... ] }.
+
+Analise e responda.`;
+    }
+
     const messages = [
       { role: 'system', content: adminConfig.prompt },
       { role: 'user', content: userText }
     ];
+
     const reply = await generate(adminConfig.provider, apiKey, messages, adminConfig.parameters);
-    let clientReply = reply;
-    const idx = reply.indexOf('RELATORIO:');
-    if (idx !== -1) {
-      clientReply = reply.slice(0, idx).trim();
-      const reportText = reply.slice(idx + 'RELATORIO:'.length).trim();
-      reports.push({ sessionId, text: reportText, timestamp: Date.now() });
-      intake.stage = 'done';
+
+    try {
+      // Tenta extrair um bloco JSON da resposta
+      const jsonMatch = reply.match(/\{.*\}/s);
+
+      if (jsonMatch && intake.interactionCount < 3) {
+        const jsonString = jsonMatch[0];
+        const newQuestions = JSON.parse(jsonString);
+        if (newQuestions.questions && Array.isArray(newQuestions.questions)) {
+          intake.questions = newQuestions.questions;
+          return res.json(newQuestions);
+        }
+      }
+
+      // Se não encontrou JSON, o JSON é inválido, ou o limite de interações foi atingido, trata como resposta final
+      let clientReply = reply;
+      const idx = reply.indexOf('RELATORIO:');
+      if (idx !== -1) {
+        clientReply = reply.slice(0, idx).trim();
+        const reportText = reply.slice(idx + 'RELATORIO:'.length).trim();
+        const newReport = { sessionId, text: reportText, timestamp: Date.now() };
+        reports.push(newReport);
+        if (lawyerSocket) {
+          lawyerSocket.emit('new-report', newReport);
+        }
+        intake.stage = 'done';
+      } else {
+        // Se o relatório não foi gerado, mas o limite foi atingido, nós o forçamos.
+        if (intake.interactionCount >= 3) {
+            clientReply = "Obrigado por suas respostas. Estamos gerando seu relatório.";
+            const reportText = `Resumo: ${intake.summary}
+Respostas: ${answersText}`;
+            const newReport = { sessionId, text: reportText, timestamp: Date.now() };
+            reports.push(newReport);
+            if (lawyerSocket) {
+                lawyerSocket.emit('new-report', newReport);
+            }
+            intake.stage = 'done';
+        } else {
+            console.warn(`RELATORIO separator not found for session ${sessionId}.`);
+        }
+      }
+      return res.json({ reply: clientReply });
+
+    } catch (e) {
+      // Se o parsing do JSON extraído falhar, ou outro erro ocorrer
+      console.error('Error processing AI response:', e);
+      console.error('Original reply was:', reply);
+      // Envia uma mensagem de erro amigável para o cliente
+      return res.status(500).json({ reply: 'Ocorreu um erro ao processar a resposta da IA. Por favor, tente novamente.' });
     }
-    res.json({ reply: clientReply });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'provider_error', message: e.message });
@@ -294,30 +412,6 @@ app.get('/admin/keys', (req, res) => {
 
 app.get('/admin/reports', (req, res) => {
   res.json(reports);
-});
-
-// Endpoints de configuração do site (Home)
-app.get('/admin/site-config', (req, res) => {
-  res.json(siteConfig);
-});
-
-app.post('/admin/site-config', (req, res) => {
-  const body = req.body || {};
-  // validação leve
-  const allowThemes = ['theme-a','theme-b','theme-c','theme-d','theme-e','theme-f','theme-g', null];
-  if (body.theme && !allowThemes.includes(body.theme)) {
-    return res.status(400).json({ error: 'invalid_theme' });
-  }
-  if (body.sectionsOrder && !Array.isArray(body.sectionsOrder)) {
-    return res.status(400).json({ error: 'invalid_sections' });
-  }
-  siteConfig = { ...siteConfig, ...body };
-  try {
-    fs.writeFileSync(siteConfigPath, JSON.stringify(siteConfig, null, 2));
-  } catch (e) {
-    console.warn('Falha ao salvar site.config.json:', e.message);
-  }
-  res.json({ ok: true, siteConfig });
 });
 
 let lawyerSocket = null; // socket do advogado

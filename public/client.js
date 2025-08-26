@@ -20,6 +20,7 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   const modeBar = document.querySelector('.mode-bar');
   const actions = document.querySelector('.call-actions');
   const backBtn = document.getElementById('backBtn');
+  const fullscreenBtn = document.getElementById('fullscreenBtn');
 
   let currentMode = 'video';
   let lastOnline = false;
@@ -292,5 +293,15 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   // Aviso de contexto inseguro
   if (isPotentiallyInsecureContext()) {
     setInfo('Aviso: contexto inseguro pode bloquear câmera/microfone. Use localhost ou HTTPS.');
+  }
+
+  if (fullscreenBtn) {
+    fullscreenBtn.addEventListener('click', () => {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else {
+        callInterface.requestFullscreen();
+      }
+    });
   }
 })();
