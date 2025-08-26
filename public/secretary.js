@@ -6,7 +6,7 @@ const sessionId = crypto.randomUUID();
 function append(role, text) {
   const div = document.createElement('div');
   div.className = 'msg ' + role;
-  div.textContent = text;
+  div.innerHTML = window.marked ? marked.parse(text) : text;
   messagesEl.appendChild(div);
   messagesEl.scrollTop = messagesEl.scrollHeight;
 }
@@ -60,17 +60,34 @@ function renderQuestions() {
   if (inputWrap) inputWrap.style.display = 'none';
   const form = document.createElement('form');
   form.id = 'questionsForm';
-  currentQuestions.forEach(q => {
+  currentQuestions.forEach((q, idx) => {
     const label = document.createElement('label');
-    label.textContent = q.pergunta;
+    label.textContent = `${idx + 1}. ${q.pergunta}`;
     let inp;
     if (q.tipo === 'textarea') {
       inp = document.createElement('textarea');
     } else {
       inp = document.createElement('input');
-      inp.type = q.tipo === 'number' ? 'number' : 'text';
+      if (q.tipo === 'number') inp.type = 'number';
+      else if (q.tipo === 'date') inp.type = 'date';
+      else inp.type = 'text';
     }
     inp.name = q.id;
+    if (Array.isArray(q.opcoes) && q.opcoes.length) {
+      const optionsDiv = document.createElement('div');
+      optionsDiv.className = 'quick-replies';
+      q.opcoes.forEach(opt => {
+        const optBtn = document.createElement('button');
+        optBtn.type = 'button';
+        optBtn.textContent = opt;
+        optBtn.className = 'secondary';
+        optBtn.addEventListener('click', () => {
+          inp.value = opt;
+        });
+        optionsDiv.appendChild(optBtn);
+      });
+      label.appendChild(optionsDiv);
+    }
     label.appendChild(inp);
     form.appendChild(label);
   });
@@ -89,8 +106,8 @@ async function submitAnswers(e) {
   const answers = {};
   fd.forEach((v, k) => answers[k] = v);
   e.target.remove();
-  currentQuestions.forEach(q => {
-    append('assistant', q.pergunta);
+  currentQuestions.forEach((q, idx) => {
+    append('assistant', `${idx + 1}. ${q.pergunta}`);
     append('user', answers[q.id] || '');
   });
   append('assistant', 'Gerando orientação...');
