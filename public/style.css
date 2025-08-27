@@ -201,6 +201,14 @@ h2::after {
 
 .reports-list li { margin-bottom: 6px; }
 
+.reports-list pre {
+  white-space: pre-wrap;
+  background: var(--panel);
+  padding: 8px;
+  border-radius: 4px;
+  margin-top: 4px;
+}
+
 button.primary {
   background: var(--accent);
   color: #fff;
@@ -858,6 +866,27 @@ input.not-informed {
   background: var(--accent);
   color: #fff;
   border-color: var(--accent);
+}
+
+.quick-replies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.quick-reply {
+  background: #334155;
+  color: var(--text);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.quick-reply:hover {
+  background: #475569;
 }
 
 .checklist-item {

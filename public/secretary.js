@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     stage: 'summary' // summary -> questions -> contact -> done
   };
 
-  function appendMessage(text, sender = 'user', type = 'text') {
+  function appendMessage(text, sender = 'user', type = 'text', quickReplies = []) {
     const messageEl = document.createElement('div');
     messageEl.classList.add('chat-message', `chat-message-${sender}`);
 
@@ -28,6 +28,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     aiMessages.appendChild(messageEl);
+
+    if (quickReplies.length > 0) {
+      const btnContainer = document.createElement('div');
+      btnContainer.classList.add('quick-replies');
+      quickReplies.forEach((qr) => {
+        const btn = document.createElement('button');
+        btn.classList.add('quick-reply');
+        btn.textContent = qr.label;
+        btn.addEventListener('click', () => {
+          btnContainer.remove();
+          aiInput.value = qr.value;
+          handleSend();
+        });
+        btnContainer.appendChild(btn);
+      });
+      aiMessages.appendChild(btnContainer);
+    }
+
     aiMessages.scrollTop = aiMessages.scrollHeight;
     return messageEl;
   }
@@ -203,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
         intakeState.questions = data.questions;
         displayQuestions(data.questions);
       } else {
-        appendMessage(data.reply, 'assistant');
+        appendMessage(data.reply, 'assistant', 'text', data.quickReplies || []);
         promptForContact();
       }
     } catch (error) {
@@ -214,7 +232,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function promptForContact() {
-    appendMessage('Para um retorno mais ágil, por favor, deixe seu nome e um contato (email ou telefone).', 'assistant');
+    appendMessage('Para um retorno mais ágil, por favor, deixe seu nome e um contato (email ou telefone).', 'assistant', 'text', [
+      { label: 'Prefiro não informar', value: 'Prefiro não informar.' }
+    ]);
     intakeState.stage = 'contact';
     aiInput.style.display = 'block';
     aiSend.style.display = 'block';
@@ -271,5 +291,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  appendMessage('Olá! Sou a secretária virtual. Por favor, descreva seu caso em poucas palavras para que eu possa ajudar.', 'assistant');
+  appendMessage(
+    'Olá! Sou a secretária virtual. Por favor, descreva seu caso em poucas palavras para que eu possa ajudar.',
+    'assistant',
+    'text',
+    [
+      { label: 'Agendar consulta', value: 'Gostaria de agendar uma consulta.' },
+      { label: 'Falar com advogado', value: 'Preciso falar com um advogado.' },
+      { label: 'Outro assunto', value: 'Tenho outra questão jurídica.' }
+    ]
+  );
 });

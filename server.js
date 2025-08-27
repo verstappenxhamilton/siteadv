@@ -68,6 +68,23 @@ const sessions = {};
 const reports = [];
 const intakes = {};
 
+function extractQuickReplies(text) {
+  const match = text.match(/\[(.*?)\]/);
+  let cleaned = text;
+  let quick = [];
+  if (match) {
+    quick = match[1]
+      .split('|')
+      .map(opt => opt.trim())
+      .filter(Boolean)
+      .map(o => ({ label: o, value: o }));
+    cleaned = text.replace(match[0], '').trim();
+  } else if (text.includes('?')) {
+    quick = ['Sim', 'Não', 'Não sei'].map(o => ({ label: o, value: o }));
+  }
+  return { cleaned, quick };
+}
+
 // Endpoint simples para formulário de contato
 app.post('/contact', (req, res) => {
   const { nome, email, mensagem } = req.body || {};
@@ -163,9 +180,11 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
       if (lawyerSocket) {
         lawyerSocket.emit('new-report', newReport);
       }
-      intake.stage = 'done';
+      session.done = true;
     }
-    res.json({ reply: clientReply });
+    const { cleaned, quick } = extractQuickReplies(clientReply);
+    clientReply = cleaned;
+    res.json({ reply: clientReply, quickReplies: quick });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'provider_error', message: e.message });
@@ -249,29 +268,6 @@ app.post('/api/answers', chatLimiter, async (req, res) => {
   try {
     const answersText = Object.entries(answers).map(([k, v]) => `- ${intake.questions.find(q => q.id === k)?.text || k}: ${v}`).join('\n');
 
-    // Validação de respostas com IA
-    for (const [key, value] of Object.entries(answers)) {
-      const question = intake.questions.find(q => q.id === key);
-      // Validar apenas campos de texto abertos
-      if (question && (question.type === 'text' || question.type === 'textarea')) {
-        const validationPrompt = `A seguir, uma resposta de um usuário a uma pergunta. A resposta parece sem sentido, evasiva ou um texto aleatório? Responda apenas com 'sim' ou 'não'. Pergunta: "${question.text}" Resposta: "${value}"`;
-        const validationMessages = [{ role: 'user', content: validationPrompt }];
-        const validationResult = await generate(adminConfig.provider, apiKey, validationMessages, { ...adminConfig.parameters, max_output_tokens: 5, temperature: 0.1 });
-
-        if (validationResult.toLowerCase().includes('sim')) {
-          console.log(`Gibberish detected for session ${sessionId}. Answer: ${value}`);
-          const reportText = `O usuário forneceu uma resposta inválida ou sem sentido para a pergunta "${question.text}".\nResposta do usuário: "${value}"\n\nSessão encerrada.`;
-          const newReport = { sessionId, text: reportText, timestamp: Date.now() };
-          reports.push(newReport);
-          if (lawyerSocket) {
-            lawyerSocket.emit('new-report', newReport);
-          }
-          intake.stage = 'done';
-          return res.json({ reply: 'Suas respostas parecem inválidas. A sessão foi encerrada. Um relatório foi enviado ao advogado.' });
-        }
-      }
-    }
-
     let userText;
     // Check if interaction limit is reached
     if (intake.interactionCount >= 3) {
@@ -338,7 +334,9 @@ Respostas: ${answersText}`;
             console.warn(`RELATORIO separator not found for session ${sessionId}.`);
         }
       }
-      return res.json({ reply: clientReply });
+      const { cleaned, quick } = extractQuickReplies(clientReply);
+      clientReply = cleaned;
+      return res.json({ reply: clientReply, quickReplies: quick });
 
     } catch (e) {
       // Se o parsing do JSON extraído falhar, ou outro erro ocorrer

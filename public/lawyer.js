@@ -374,7 +374,14 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
     const li = document.createElement('li');
     const date = new Date(r.timestamp).toLocaleString();
     const contact = r.name ? ` - ${r.name} (${r.contact || ''})` : '';
-    li.textContent = `${date}${contact}: ${r.text}`;
+    const details = document.createElement('details');
+    const summary = document.createElement('summary');
+    summary.textContent = `${date}${contact}`;
+    const pre = document.createElement('pre');
+    pre.textContent = r.text;
+    details.appendChild(summary);
+    details.appendChild(pre);
+    li.appendChild(details);
     reportsList.prepend(li); // Adiciona no topo
   }
 
