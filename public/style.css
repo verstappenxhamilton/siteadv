@@ -913,7 +913,7 @@ input.not-informed {
   backdrop-filter: blur(10px);
 }
 
-#contentForm fieldset {
+#contentEditor details {
   border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: 12px;
   padding: 20px;
@@ -921,11 +921,32 @@ input.not-informed {
   background: rgba(0,0,0,0.1);
 }
 
-#contentForm legend {
+#contentEditor summary {
   font-weight: 600;
-  padding: 0 10px;
-  color: var(--accent);
-  font-size: 18px;
+  padding: 0 4px;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#contentEditor summary::-webkit-details-marker {
+  display: none;
+}
+
+#contentEditor details[open] > summary {
+  margin-bottom: 12px;
+}
+
+#contentEditor summary::after {
+  content: '\25bc';
+  font-size: 12px;
+  transition: transform 0.2s;
+}
+
+#contentEditor details[open] > summary::after {
+  transform: rotate(180deg);
 }
 
 #contentForm .form-row {
@@ -993,6 +1014,10 @@ input.not-informed {
 #contentForm .remove-social:hover {
     transform: scale(1.1);
     filter: brightness(1.1);
+}
+
+#contentEditor .save-content {
+  width: 100%;
 }
 
 

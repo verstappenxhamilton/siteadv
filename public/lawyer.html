@@ -113,36 +113,52 @@
     </div>
     <div class="panel" style="margin-top:14px;" id="contentEditor">
       <h3 style="margin-top:0;">Editor de Conteúdo da Página Principal</h3>
-      <form id="contentForm">
-        <fieldset>
-          <legend>Seção Hero</legend>
-          <label>Título: <input type="text" name="hero.title" /></label>
-          <label>Subtítulo: <input type="text" name="hero.subtitle" /></label>
-          <label>Texto do Botão: <input type="text" name="hero.button.text" /></label>
-          <label>Link do Botão: <input type="text" name="hero.button.link" /></label>
-        </fieldset>
+      <form id="contentForm" class="form-grid">
+        <details open>
+          <summary>Seção Hero</summary>
+          <label>Título
+            <input type="text" name="hero.title" placeholder="Título principal" />
+          </label>
+          <label>Subtítulo
+            <input type="text" name="hero.subtitle" placeholder="Subtítulo descritivo" />
+          </label>
+          <label>Texto do Botão
+            <input type="text" name="hero.button.text" placeholder="Texto do botão" />
+          </label>
+          <label>Link do Botão
+            <input type="text" name="hero.button.link" placeholder="URL de destino" />
+          </label>
+        </details>
 
-        <fieldset>
-          <legend>Seção Sobre</legend>
-          <label>Título: <input type="text" name="about.title" /></label>
-          <label>Texto: <textarea name="about.text" rows="5"></textarea></label>
-        </fieldset>
+        <details>
+          <summary>Seção Sobre</summary>
+          <label>Título
+            <input type="text" name="about.title" placeholder="Título da seção" />
+          </label>
+          <label>Texto
+            <textarea name="about.text" rows="5" placeholder="Descrição sobre o escritório"></textarea>
+          </label>
+        </details>
 
-        <fieldset>
-          <legend>Seção Áreas de Atuação</legend>
-          <label>Título: <input type="text" name="areas.title" /></label>
-          <div id="areas-items"></div>
+        <details>
+          <summary>Seção Áreas de Atuação</summary>
+          <label>Título
+            <input type="text" name="areas.title" placeholder="Título da seção" />
+          </label>
+          <div id="areas-items" class="form-grid"></div>
           <button type="button" id="addArea" class="secondary">Adicionar Área</button>
-        </fieldset>
+        </details>
 
-        <fieldset>
-          <legend>Rodapé</legend>
-          <label>Texto: <input type="text" name="footer.text" /></label>
-          <div id="social-links"></div>
+        <details>
+          <summary>Rodapé</summary>
+          <label>Texto
+            <input type="text" name="footer.text" placeholder="Texto do rodapé" />
+          </label>
+          <div id="social-links" class="form-grid"></div>
           <button type="button" id="addSocial" class="secondary">Adicionar Rede Social</button>
-        </fieldset>
+        </details>
 
-        <button type="submit" class="primary" style="margin-top: 20px;">Salvar Conteúdo</button>
+        <button type="submit" class="primary save-content">Salvar Conteúdo</button>
       </form>
     </div>
   </div>

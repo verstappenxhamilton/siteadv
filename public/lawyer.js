@@ -481,12 +481,14 @@ function renderAreas(items = []) {
     areasItems.innerHTML = '';
     items.forEach((item, index) => {
         const div = document.createElement('div');
-        div.className = 'area-item';
+        div.className = 'area-item form-grid';
         div.innerHTML = `
-            <label>Título: <input type="text" value="${item.title}" data-index="${index}" name="area-title"></label>
+            <button type="button" class="remove-area" data-index="${index}">&times;</button>
+            <label>Nome da Área
+                <input type="text" value="${item.title}" data-index="${index}" name="area-title" placeholder="Ex.: Direito Civil">
+            </label>
             <input type="hidden" value="${item.icon}" data-index="${index}" name="area-icon">
             <button type="button" class="choose-icon secondary" data-index="${index}">Escolher Ícone</button>
-            <button type="button" class="remove-area secondary" data-index="${index}">Remover</button>
         `;
         areasItems.appendChild(div);
     });
@@ -497,12 +499,18 @@ function renderSocial(items = []) {
     socialLinks.innerHTML = '';
     items.forEach((item, index) => {
         const div = document.createElement('div');
-        div.className = 'social-item';
+        div.className = 'social-item form-grid';
         div.innerHTML = `
-            <label>Nome: <input type="text" value="${item.name}" data-index="${index}" name="social-name"></label>
-            <label>Link: <input type="text" value="${item.link}" data-index="${index}" name="social-link"></label>
-            <label>Ícone (SVG Path): <input type="text" value="${item.icon}" data-index="${index}" name="social-icon"></label>
-            <button type="button" class="remove-social secondary" data-index="${index}">Remover</button>
+            <button type="button" class="remove-social" data-index="${index}">&times;</button>
+            <label>Nome
+                <input type="text" value="${item.name}" data-index="${index}" name="social-name" placeholder="Ex.: LinkedIn">
+            </label>
+            <label>Link
+                <input type="text" value="${item.link}" data-index="${index}" name="social-link" placeholder="https://...">
+            </label>
+            <label>Ícone (SVG Path)
+                <input type="text" value="${item.icon}" data-index="${index}" name="social-icon" placeholder="Path do ícone">
+            </label>
         `;
         socialLinks.appendChild(div);
     });
