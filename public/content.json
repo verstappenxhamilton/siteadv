@@ -1,4 +1,18 @@
 {
+  "site": {
+    "title": "Escritório de Advocacia Online"
+  },
+  "nav": {
+    "about": "Sobre",
+    "areas": "Áreas",
+    "contact": "Contato",
+    "lawyer": "Área do Advogado"
+  },
+  "sections": {
+    "secretary": { "title": "Secretária Virtual" },
+    "contact": { "title": "Contato" },
+    "form": { "title": "Envie uma mensagem" }
+  },
   "hero": {
     "title": "Defendendo seus direitos com excelência",
     "subtitle": "Atendimento jurídico moderno, humano e eficiente.",

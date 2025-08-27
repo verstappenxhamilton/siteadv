@@ -463,6 +463,15 @@ async function loadContent() {
 
 function populateForm(content) {
     if (!contentForm) return;
+    contentForm.querySelector('[name="site.title"]').value = content.site?.title || '';
+    contentForm.querySelector('[name="nav.about"]').value = content.nav?.about || '';
+    contentForm.querySelector('[name="nav.areas"]').value = content.nav?.areas || '';
+    contentForm.querySelector('[name="nav.contact"]').value = content.nav?.contact || '';
+    contentForm.querySelector('[name="nav.lawyer"]').value = content.nav?.lawyer || '';
+    contentForm.querySelector('[name="sections.secretary.title"]').value = content.sections?.secretary?.title || '';
+    contentForm.querySelector('[name="sections.contact.title"]').value = content.sections?.contact?.title || '';
+    contentForm.querySelector('[name="sections.form.title"]').value = content.sections?.form?.title || '';
+
     contentForm.querySelector('[name="hero.title"]').value = content.hero.title;
     contentForm.querySelector('[name="hero.subtitle"]').value = content.hero.subtitle;
     contentForm.querySelector('[name="hero.button.text"]').value = content.hero.button.text;
@@ -482,11 +491,17 @@ function renderAreas(items = []) {
     items.forEach((item, index) => {
         const div = document.createElement('div');
         div.className = 'area-item';
+        const iconSvg = item.icon
+            ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="${item.icon}"/></svg>`
+            : '<span class="icon-placeholder">?</span>';
         div.innerHTML = `
-            <label>Título: <input type="text" value="${item.title}" data-index="${index}" name="area-title"></label>
+            <button type="button" class="remove-area" data-index="${index}">&times;</button>
+            <div class="area-main">
+                <span class="area-icon-preview" data-index="${index}">${iconSvg}</span>
+                <label>Título: <input type="text" value="${item.title}" data-index="${index}" name="area-title" placeholder="Ex.: Direito Civil"></label>
+            </div>
             <input type="hidden" value="${item.icon}" data-index="${index}" name="area-icon">
             <button type="button" class="choose-icon secondary" data-index="${index}">Escolher Ícone</button>
-            <button type="button" class="remove-area secondary" data-index="${index}">Remover</button>
         `;
         areasItems.appendChild(div);
     });
@@ -499,10 +514,10 @@ function renderSocial(items = []) {
         const div = document.createElement('div');
         div.className = 'social-item';
         div.innerHTML = `
-            <label>Nome: <input type="text" value="${item.name}" data-index="${index}" name="social-name"></label>
-            <label>Link: <input type="text" value="${item.link}" data-index="${index}" name="social-link"></label>
-            <label>Ícone (SVG Path): <input type="text" value="${item.icon}" data-index="${index}" name="social-icon"></label>
-            <button type="button" class="remove-social secondary" data-index="${index}">Remover</button>
+            <button type="button" class="remove-social" data-index="${index}">&times;</button>
+            <label>Nome: <input type="text" value="${item.name}" data-index="${index}" name="social-name" placeholder="Ex.: LinkedIn"></label>
+            <label>Link: <input type="text" value="${item.link}" data-index="${index}" name="social-link" placeholder="https://..."></label>
+            <label>Ícone (SVG Path): <input type="text" value="${item.icon}" data-index="${index}" name="social-icon" placeholder="M12 3..."></label>
         `;
         socialLinks.appendChild(div);
     });
@@ -518,6 +533,10 @@ function openIconPicker(areaIndex) {
         iconOption.addEventListener('click', () => {
             const iconInput = document.querySelector(`input[name="area-icon"][data-index="${currentAreaIndex}"]`);
             iconInput.value = iconPath;
+            const preview = document.querySelector(`.area-icon-preview[data-index="${currentAreaIndex}"]`);
+            if (preview) {
+                preview.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="${iconPath}"/></svg>`;
+            }
             iconPickerModal.style.display = 'none';
         });
         iconPicker.appendChild(iconOption);
@@ -571,6 +590,20 @@ if (contentForm) {
         e.preventDefault();
         const formData = new FormData(contentForm);
         const updatedContent = {
+            site: {
+                title: formData.get('site.title')
+            },
+            nav: {
+                about: formData.get('nav.about'),
+                areas: formData.get('nav.areas'),
+                contact: formData.get('nav.contact'),
+                lawyer: formData.get('nav.lawyer')
+            },
+            sections: {
+                secretary: { title: formData.get('sections.secretary.title') },
+                contact: { title: formData.get('sections.contact.title') },
+                form: { title: formData.get('sections.form.title') }
+            },
             hero: {
                 title: formData.get('hero.title'),
                 subtitle: formData.get('hero.subtitle'),

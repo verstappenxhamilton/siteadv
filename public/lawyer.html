@@ -113,34 +113,46 @@
     </div>
     <div class="panel" style="margin-top:14px;" id="contentEditor">
       <h3 style="margin-top:0;">Editor de Conteúdo da Página Principal</h3>
-      <form id="contentForm">
-        <fieldset>
-          <legend>Seção Hero</legend>
-          <label>Título: <input type="text" name="hero.title" /></label>
-          <label>Subtítulo: <input type="text" name="hero.subtitle" /></label>
-          <label>Texto do Botão: <input type="text" name="hero.button.text" /></label>
-          <label>Link do Botão: <input type="text" name="hero.button.link" /></label>
-        </fieldset>
+      <form id="contentForm" class="form-grid">
+        <details open>
+          <summary>Configurações do Site</summary>
+          <label>Nome do Site: <input type="text" name="site.title" placeholder="Ex.: Escritório de Advocacia" /></label>
+          <label>Menu Sobre: <input type="text" name="nav.about" placeholder="Ex.: Sobre" /></label>
+          <label>Menu Áreas: <input type="text" name="nav.areas" placeholder="Ex.: Áreas" /></label>
+          <label>Menu Contato: <input type="text" name="nav.contact" placeholder="Ex.: Contato" /></label>
+          <label>Menu Advogado: <input type="text" name="nav.lawyer" placeholder="Ex.: Área do Advogado" /></label>
+          <label>Título Secretária: <input type="text" name="sections.secretary.title" placeholder="Ex.: Secretária Virtual" /></label>
+          <label>Título Contato: <input type="text" name="sections.contact.title" placeholder="Ex.: Contato" /></label>
+          <label>Título Formulário: <input type="text" name="sections.form.title" placeholder="Ex.: Envie uma mensagem" /></label>
+        </details>
 
-        <fieldset>
-          <legend>Seção Sobre</legend>
-          <label>Título: <input type="text" name="about.title" /></label>
-          <label>Texto: <textarea name="about.text" rows="5"></textarea></label>
-        </fieldset>
+        <details>
+          <summary>Seção Hero</summary>
+          <label>Título: <input type="text" name="hero.title" placeholder="Ex.: Defendendo seus direitos" /></label>
+          <label>Subtítulo: <input type="text" name="hero.subtitle" placeholder="Ex.: Atendimento jurídico personalizado" /></label>
+          <label>Texto do Botão: <input type="text" name="hero.button.text" placeholder="Ex.: Fale Conosco" /></label>
+          <label>Link do Botão: <input type="text" name="hero.button.link" placeholder="Ex.: /contato" /></label>
+        </details>
 
-        <fieldset>
-          <legend>Seção Áreas de Atuação</legend>
-          <label>Título: <input type="text" name="areas.title" /></label>
+        <details>
+          <summary>Seção Sobre</summary>
+          <label>Título: <input type="text" name="about.title" placeholder="Ex.: Sobre o Escritório" /></label>
+          <label>Texto: <textarea name="about.text" rows="5" placeholder="Conte a história do escritório..."></textarea></label>
+        </details>
+
+        <details>
+          <summary>Seção Áreas de Atuação</summary>
+          <label>Título: <input type="text" name="areas.title" placeholder="Ex.: Áreas de Atuação" /></label>
           <div id="areas-items"></div>
           <button type="button" id="addArea" class="secondary">Adicionar Área</button>
-        </fieldset>
+        </details>
 
-        <fieldset>
-          <legend>Rodapé</legend>
-          <label>Texto: <input type="text" name="footer.text" /></label>
+        <details>
+          <summary>Rodapé</summary>
+          <label>Texto: <input type="text" name="footer.text" placeholder="Ex.: © 2024 - Todos os direitos reservados" /></label>
           <div id="social-links"></div>
           <button type="button" id="addSocial" class="secondary">Adicionar Rede Social</button>
-        </fieldset>
+        </details>
 
         <button type="submit" class="primary" style="margin-top: 20px;">Salvar Conteúdo</button>
       </form>

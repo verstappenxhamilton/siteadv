@@ -961,6 +961,68 @@ input.not-informed {
     box-shadow: 0 0 0 3px rgba(var(--accent), 0.2);
 }
 
+#contentForm details {
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  background: rgba(0,0,0,0.15);
+}
+
+#contentForm details:not(:last-of-type) {
+  margin-bottom: 16px;
+}
+
+#contentForm summary {
+  cursor: pointer;
+  font-weight: 600;
+  margin: -16px -16px 16px;
+  padding: 16px;
+  background: rgba(0,0,0,0.25);
+  border-radius: 12px;
+}
+
+#contentForm summary::-webkit-details-marker { display: none; }
+
+#contentForm summary::after {
+  content: '\25BC';
+  float: right;
+  transition: transform 0.2s;
+}
+
+#contentForm details[open] summary::after { transform: rotate(180deg); }
+
+#contentForm .area-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#contentForm .area-icon-preview {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#contentForm .area-icon-preview svg {
+  width: 24px;
+  height: 24px;
+  stroke: var(--text);
+}
+
+#contentForm .icon-placeholder {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background: rgba(148, 163, 184, 0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--muted);
+}
+
 #contentForm .area-item,
 #contentForm .social-item {
   border: 1px solid rgba(148, 163, 184, 0.2);

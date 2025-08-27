@@ -37,23 +37,23 @@
   <header class="site-header">
     <div class="container header">
       <div class="brand">
-        
+
         <div>
-          <div style="font-weight:700;">Escritório de Advocacia Online</div>
+          <div id="siteBrand" style="font-weight:700;">Escritório de Advocacia Online</div>
           <div class="badge" id="statusBadge">Carregando status...</div>
         </div>
       </div>
       <nav class="nav-links">
         <a href="#contato" id="contactLink" class="hidden">Contato</a>
-        <a href="#sobre">Sobre</a>
-        <a href="#areas">Áreas</a>
-        <a class="secondary" href="/lawyer.html" title="Área do Advogado">Área do Advogado</a>
+        <a href="#sobre" id="navAbout">Sobre</a>
+        <a href="#areas" id="navAreas">Áreas</a>
+        <a class="secondary" href="/lawyer.html" id="navLawyer" title="Área do Advogado">Área do Advogado</a>
       </nav>
     </div>
   </header>
   <section id="secretaria" class="secretary-section">
     <div class="container">
-      <h2>Secretária Virtual</h2>
+      <h2 id="secretaryTitle">Secretária Virtual</h2>
       <div id="aiChat" class="chat">
         <div id="aiMessages" class="chat-messages"></div>
         <div class="chat-input">
@@ -65,7 +65,7 @@
   </section>
   <section id="contato" class="contact-section hidden">
     <div class="container">
-      <h2>Contato</h2>
+      <h2 id="contactTitle">Contato</h2>
       <div id="callInterface" class="panel contact-panel hidden">
         <div class="mode-bar" role="group" aria-label="Modo de comunicação">
           <label><input type="radio" name="mode" value="video" checked>Vídeo + Áudio</label>
@@ -150,7 +150,7 @@
   <div class="section-divider" aria-hidden="true"></div>
   <section id="formulario" class="form-section reveal">
     <div class="container">
-      <h2>Envie uma mensagem</h2>
+      <h2 id="formTitle">Envie uma mensagem</h2>
       <form class="contact-form">
         <input type="text" name="nome" placeholder="Seu nome" required />
         <input type="email" name="email" placeholder="Seu e-mail" required />
@@ -184,7 +184,28 @@
       try {
         const res = await fetch('/api/content');
         const content = await res.json();
-        
+
+        // Site & Navegação
+        document.title = content.site.title;
+        const brand = document.getElementById('siteBrand');
+        if (brand) brand.textContent = content.site.title;
+        const navAbout = document.getElementById('navAbout');
+        if (navAbout) navAbout.textContent = content.nav.about;
+        const navAreas = document.getElementById('navAreas');
+        if (navAreas) navAreas.textContent = content.nav.areas;
+        const navContact = document.getElementById('contactLink');
+        if (navContact) navContact.textContent = content.nav.contact;
+        const navLawyer = document.getElementById('navLawyer');
+        if (navLawyer) navLawyer.textContent = content.nav.lawyer;
+
+        // Títulos das seções
+        const secTitle = document.getElementById('secretaryTitle');
+        if (secTitle) secTitle.textContent = content.sections.secretary.title;
+        const contactTitle = document.getElementById('contactTitle');
+        if (contactTitle) contactTitle.textContent = content.sections.contact.title;
+        const formTitle = document.getElementById('formTitle');
+        if (formTitle) formTitle.textContent = content.sections.form.title;
+
         // Hero
         document.querySelector('.hero-section h1').textContent = content.hero.title;
         document.querySelector('.hero-section p').textContent = content.hero.subtitle;
