@@ -17,7 +17,13 @@ document.addEventListener('DOMContentLoaded', () => {
     stage: 'summary' // summary -> questions -> contact -> done
   };
 
-  function appendMessage(text, sender = 'user', type = 'text') {
+  const DEFAULT_QUICK_REPLIES = [
+    { label: 'Agendar consulta', value: 'Gostaria de agendar uma consulta.' },
+    { label: 'Falar com advogado', value: 'Preciso falar com um advogado.' },
+    { label: 'Outro assunto', value: 'Tenho outra questão jurídica.' }
+  ];
+
+  function appendMessage(text, sender = 'user', type = 'text', quickReplies = []) {
     const messageEl = document.createElement('div');
     messageEl.classList.add('chat-message', `chat-message-${sender}`);
 
@@ -28,6 +34,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     aiMessages.appendChild(messageEl);
+
+    const replies = quickReplies.length
+      ? quickReplies
+      : (sender === 'assistant' && type === 'text' && intakeState.stage !== 'done'
+        ? DEFAULT_QUICK_REPLIES
+        : []);
+
+    if (replies.length > 0) {
+      const btnContainer = document.createElement('div');
+      btnContainer.classList.add('quick-replies');
+      replies.forEach((qr) => {
+        const btn = document.createElement('button');
+        btn.classList.add('quick-reply');
+        btn.textContent = qr.label;
+        btn.addEventListener('click', () => {
+          btnContainer.remove();
+          aiInput.value = qr.value;
+          handleSend();
+        });
+        btnContainer.appendChild(btn);
+      });
+      aiMessages.appendChild(btnContainer);
+    }
+
     aiMessages.scrollTop = aiMessages.scrollHeight;
     return messageEl;
   }
@@ -271,5 +301,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  appendMessage('Olá! Sou a secretária virtual. Por favor, descreva seu caso em poucas palavras para que eu possa ajudar.', 'assistant');
+  appendMessage(
+    'Olá! Sou a secretária virtual. Por favor, descreva seu caso em poucas palavras para que eu possa ajudar.',
+    'assistant'
+  );
 });

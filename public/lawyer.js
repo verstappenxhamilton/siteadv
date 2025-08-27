@@ -373,8 +373,20 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
     if (!reportsList) return;
     const li = document.createElement('li');
     const date = new Date(r.timestamp).toLocaleString();
-    const contact = r.name ? ` - ${r.name} (${r.contact || ''})` : '';
-    li.textContent = `${date}${contact}: ${r.text}`;
+    const meta = document.createElement('div');
+    meta.classList.add('report-meta');
+    let metaText = date;
+    if (r.name) {
+      metaText += ` - ${r.name}${r.contact ? ` (${r.contact})` : ''}`;
+    }
+    meta.textContent = metaText;
+
+    const text = document.createElement('div');
+    text.classList.add('report-text');
+    text.textContent = r.text;
+
+    li.appendChild(meta);
+    li.appendChild(text);
     reportsList.prepend(li); // Adiciona no topo
   }
 

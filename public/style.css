@@ -192,14 +192,29 @@ h2::after {
 .provider-field span { font-size: 14px; }
 
 .reports-list {
-  list-style: disc;
-  padding-left: 20px;
+  list-style: none;
+  padding-left: 0;
   max-height: 200px;
   overflow-y: auto;
   margin-top: 8px;
 }
 
-.reports-list li { margin-bottom: 6px; }
+.reports-list li {
+  margin-bottom: 8px;
+  padding: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 6px;
+}
+
+.report-meta {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.report-text {
+  font-size: 14px;
+  white-space: pre-wrap;
+}
 
 button.primary {
   background: var(--accent);
@@ -858,6 +873,27 @@ input.not-informed {
   background: var(--accent);
   color: #fff;
   border-color: var(--accent);
+}
+
+.quick-replies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.quick-reply {
+  background: #334155;
+  color: var(--text);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.quick-reply:hover {
+  background: #475569;
 }
 
 .checklist-item {
