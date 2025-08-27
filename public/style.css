@@ -860,6 +860,16 @@ input.not-informed {
   border-color: var(--accent);
 }
 
+.quick-replies {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  max-width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .checklist-item {
   display: flex;
   align-items: center;

@@ -56,6 +56,23 @@ document.addEventListener('DOMContentLoaded', () => {
     aiSend.disabled = disabled;
   }
 
+  function appendQuickReplies(options) {
+    const container = document.createElement('div');
+    container.classList.add('chat-message', 'chat-message-assistant', 'quick-replies');
+    options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.classList.add('question-button');
+      btn.textContent = opt;
+      btn.addEventListener('click', () => {
+        aiInput.value = opt;
+        handleSend();
+      });
+      container.appendChild(btn);
+    });
+    aiMessages.appendChild(container);
+    aiMessages.scrollTop = aiMessages.scrollHeight;
+  }
+
   async function handleInitialMessage() {
     const summary = aiInput.value.trim();
     if (!summary) return;
@@ -272,4 +289,5 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   appendMessage('Olá! Sou a secretária virtual. Por favor, descreva seu caso em poucas palavras para que eu possa ajudar.', 'assistant');
+  appendQuickReplies(['Regularização de Imóveis', 'Direito Trabalhista', 'Direito Empresarial']);
 });
