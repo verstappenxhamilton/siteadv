@@ -53,7 +53,7 @@ const adminConfig = {
     top_p: 1,
     stop_sequences: []
   },
-  prompt: 'Você é um advogado virtual do escritório. Responda em português formal e de maneira breve. Ao receber o resumo do cliente, gere perguntas objetivas para coletar dados e verificar documentos, incluindo opções como usucapião judicial ou extrajudicial com seus respectivos custos no TJMG quando cabível. Depois das respostas do cliente, forneça uma orientação final e encerre com uma linha "RELATORIO:" resumindo as informações para o advogado.',
+  prompt: 'Você é um advogado virtual do escritório. Sua tarefa é fazer uma triagem inicial. **Faça perguntas essenciais e de alto nível primeiro.** Evite pedir detalhes específicos como números de documento ou apólice, a menos que seja absolutamente crítico. Por exemplo, em vez de pedir o número da apólice, pergunte apenas se existe seguro. Responda em português formal e de maneira breve. Ao receber o resumo do cliente, gere perguntas objetivas para coletar dados. Depois das respostas, forneça uma orientação final e encerre com "RELATORIO:" e um resumo. Importante: Não peça informações de contato (nome, telefone, email), o sistema fará isso.',
   limits: { maxMessages: 20, maxChars: 2000 },
   features: { upload: false, ocr: false },
   apiKeys: {
@@ -123,7 +123,9 @@ const answersSchema = z.object({
 const contactSchema = z.object({
   sessionId: z.string(),
   name: z.string(),
-  contact: z.string()
+  email: z.string(),
+  phone: z.string(),
+  cpf: z.string(),
 });
 
 app.post('/api/chat', chatLimiter, async (req, res) => {
@@ -186,7 +188,7 @@ app.post('/api/questions', chatLimiter, async (req, res) => {
     return res.status(400).json({ error: 'missing_api_key' });
   }
   try {
-    const sys = `Você gera um formulário em JSON. Responda **apenas com o JSON**. O JSON deve ter uma chave 'questions', que é um array de objetos. Cada objeto representa uma pergunta e tem os seguintes campos:
+    const sys = `Você é um assistente que cria formulários JSON para uma triagem inicial de casos jurídicos. Sua tarefa é gerar um array de perguntas de alto nível e essenciais. **Use o tipo "buttons" ou "checklist" para TODAS as perguntas, exceto quando for absolutamente necessário um texto livre (como nomes ou descrições).** Não peça detalhes ou números de documentos inicialmente. A resposta deve ser **APENAS o JSON**. O JSON deve ter uma chave 'questions', que é um array de objetos. Cada objeto representa uma pergunta e tem os seguintes campos:
 - 'id': um identificador único para a pergunta (string).
 - 'text': o texto da pergunta (string).
 - 'type': o tipo de input ('text', 'number', 'date', 'buttons', 'checklist').
@@ -246,48 +248,40 @@ app.post('/api/answers', chatLimiter, async (req, res) => {
   if (!apiKey) {
     return res.status(400).json({ error: 'missing_api_key' });
   }
+
   try {
     const answersText = Object.entries(answers).map(([k, v]) => `- ${intake.questions.find(q => q.id === k)?.text || k}: ${v}`).join('\n');
 
-    // Validação de respostas com IA
-    for (const [key, value] of Object.entries(answers)) {
-      const question = intake.questions.find(q => q.id === key);
-      // Validar apenas campos de texto abertos
-      if (question && (question.type === 'text' || question.type === 'textarea')) {
-        const validationPrompt = `A seguir, uma resposta de um usuário a uma pergunta. A resposta parece sem sentido, evasiva ou um texto aleatório? Responda apenas com 'sim' ou 'não'. Pergunta: "${question.text}" Resposta: "${value}"`;
-        const validationMessages = [{ role: 'user', content: validationPrompt }];
-        const validationResult = await generate(adminConfig.provider, apiKey, validationMessages, { ...adminConfig.parameters, max_output_tokens: 5, temperature: 0.1 });
+    if (!intake.allAnswers) intake.allAnswers = [];
+    intake.allAnswers.push(answersText);
 
-        if (validationResult.toLowerCase().includes('sim')) {
-          console.log(`Gibberish detected for session ${sessionId}. Answer: ${value}`);
-          const reportText = `O usuário forneceu uma resposta inválida ou sem sentido para a pergunta "${question.text}".\nResposta do usuário: "${value}"\n\nSessão encerrada.`;
-          const newReport = { sessionId, text: reportText, timestamp: Date.now() };
-          reports.push(newReport);
-          if (lawyerSocket) {
-            lawyerSocket.emit('new-report', newReport);
-          }
-          intake.stage = 'done';
-          return res.json({ reply: 'Suas respostas parecem inválidas. A sessão foi encerrada. Um relatório foi enviado ao advogado.' });
-        }
-      }
-    }
+    if (!intake.allQuestions) intake.allQuestions = [];
+    intake.allQuestions.push(...intake.questions);
 
     let userText;
-    // Check if interaction limit is reached
-    if (intake.interactionCount >= 3) {
-      userText = `O cliente forneceu as seguintes respostas para o resumo "${intake.summary}":
-${answersText}
+    let isChecklistStage = intake.interactionCount === 2;
 
-Esta é a última interação. Você DEVE fornecer uma orientação final concisa e profissional com base em todas as informações coletadas. NÃO faça mais perguntas. Finalize com a linha "RELATORIO:" e um resumo estruturado de todas as informações.`;
-    } else {
-      userText = `O cliente forneceu as seguintes respostas para o resumo "${intake.summary}":
-${answersText}
+    if (isChecklistStage) {
+      userText = `O cliente respondeu às perguntas iniciais. Com base no resumo do caso ("${intake.summary}") e nas respostas, sua única tarefa agora é gerar uma lista de documentos necessários. A resposta DEVE ser APENAS um JSON válido, nada mais.
+      
+      Exemplo de resposta válida:
+      {"questions":[{"id":"documentos","text":"Por favor, marque os documentos que você já possui:","type":"checklist","options":["RG","CPF","Comprovante de Residência"]}]}`;
 
-Sua tarefa é analisar as respostas. Existem duas possibilidades:
-1.  **Informações Suficientes**: Se você tiver todos os dados para dar uma orientação final, escreva essa orientação e, em seguida, adicione a linha "RELATORIO:" com o resumo completo.
-2.  **Informações Insuficientes**: Se você precisar de mais informações, gere um novo formulário de perguntas em JSON. A resposta DEVE ser **APENAS o JSON**, sem nenhum outro texto antes ou depois. O formato do JSON deve ser o mesmo de antes: { "questions": [ ... ] }.
+    } else { // interactionCount >= 3
+      const allPreviousAnswers = intake.allAnswers.slice(0, -1).join('\n');
+      const documentAnswers = answersText;
+      userText = `O cliente respondeu às perguntas iniciais e agora selecionou os documentos que possui. Com base em TODAS as informações, gere o relatório final.
+      
+      **Resumo do Caso:**
+      ${intake.summary}
 
-Analise e responda.`;
+      **Respostas Iniciais:**
+      ${allPreviousAnswers}
+
+      **Documentos Selecionados:**
+      ${documentAnswers}
+
+      NÃO FAÇA MAIS PERGUNTAS. Forneça uma orientação final e depois finalize com "RELATORIO:" e um resumo em Markdown com as seções "### Resumo do Caso", "### Respostas Iniciais", "### Documentos" e "### Recomendação".`;
     }
 
     const messages = [
@@ -295,22 +289,37 @@ Analise e responda.`;
       { role: 'user', content: userText }
     ];
 
-    const reply = await generate(adminConfig.provider, apiKey, messages, adminConfig.parameters);
+    let reply = await generate(adminConfig.provider, apiKey, messages, adminConfig.parameters);
 
-    try {
-      // Tenta extrair um bloco JSON da resposta
-      const jsonMatch = reply.match(/\{.*\}/s);
-
-      if (jsonMatch && intake.interactionCount < 3) {
-        const jsonString = jsonMatch[0];
-        const newQuestions = JSON.parse(jsonString);
-        if (newQuestions.questions && Array.isArray(newQuestions.questions)) {
-          intake.questions = newQuestions.questions;
-          return res.json(newQuestions);
+    if (isChecklistStage) {
+      const cleanedReply = reply.replace(/```(json)?|```/gi, '').trim(); // Added cleaning
+      try {
+        const jsonResponse = JSON.parse(cleanedReply); // Use cleanedReply
+        if (jsonResponse.questions && Array.isArray(jsonResponse.questions)) {
+          intake.questions = jsonResponse.questions;
+          return res.json(jsonResponse);
+        }
+        throw new Error("Invalid JSON structure on first try.");
+      } catch (e) {
+        console.warn("First attempt to get checklist JSON failed. Retrying...", e.message);
+        const retryPrompt = `Sua resposta anterior não foi um JSON válido. Responda APENAS com um JSON válido para uma checklist de documentos. Exemplo: {"questions":[{"id":"documentos","text":"Marque os documentos que possui:","type":"checklist","options":["RG","CPF"]}]}`;
+        const retryMessages = [{ role: 'user', content: retryPrompt }];
+        let retryReply = await generate(adminConfig.provider, apiKey, retryMessages, adminConfig.parameters); // New variable for retry reply
+        const cleanedRetryReply = retryReply.replace(/```(json)?|```/gi, '').trim(); // Clean retry reply
+        try {
+          const jsonResponse = JSON.parse(cleanedRetryReply); // Use cleanedRetryReply
+          if (jsonResponse.questions && Array.isArray(jsonResponse.questions)) {
+            intake.questions = jsonResponse.questions;
+            return res.json(jsonResponse);
+          }
+          throw new Error("Invalid JSON structure on second try.");
+        } catch (e2) {
+          console.error("AI failed on second attempt. Ending gracefully.", e2.message);
+          return res.json({ reply: "Obrigado pelas respostas. Não foi possível gerar a lista de documentos. Por favor, preencha seus dados para finalizarmos.", action: "collect_contact_info" });
         }
       }
-
-      // Se não encontrou JSON, o JSON é inválido, ou o limite de interações foi atingido, trata como resposta final
+    } else {
+      // Final interaction, expecting a text reply with a report
       let clientReply = reply;
       const idx = reply.indexOf('RELATORIO:');
       if (idx !== -1) {
@@ -318,34 +327,19 @@ Analise e responda.`;
         const reportText = reply.slice(idx + 'RELATORIO:'.length).trim();
         const newReport = { sessionId, text: reportText, timestamp: Date.now() };
         reports.push(newReport);
-        if (lawyerSocket) {
-          lawyerSocket.emit('new-report', newReport);
-        }
+        if (lawyerSocket) lawyerSocket.emit('new-report', newReport);
         intake.stage = 'done';
       } else {
-        // Se o relatório não foi gerado, mas o limite foi atingido, nós o forçamos.
-        if (intake.interactionCount >= 3) {
-            clientReply = "Obrigado por suas respostas. Estamos gerando seu relatório.";
-            const reportText = `Resumo: ${intake.summary}
-Respostas: ${answersText}`;
-            const newReport = { sessionId, text: reportText, timestamp: Date.now() };
-            reports.push(newReport);
-            if (lawyerSocket) {
-                lawyerSocket.emit('new-report', newReport);
-            }
-            intake.stage = 'done';
-        } else {
-            console.warn(`RELATORIO separator not found for session ${sessionId}.`);
-        }
+        clientReply = "Obrigado por suas respostas. Estamos gerando seu relatório.";
+        const reportText = `Resumo: ${intake.summary}
+Respostas: ${intake.allAnswers.join('\
+')}`;
+        const newReport = { sessionId, text: reportText, timestamp: Date.now() };
+        reports.push(newReport);
+        if (lawyerSocket) lawyerSocket.emit('new-report', newReport);
+        intake.stage = 'done';
       }
-      return res.json({ reply: clientReply });
-
-    } catch (e) {
-      // Se o parsing do JSON extraído falhar, ou outro erro ocorrer
-      console.error('Error processing AI response:', e);
-      console.error('Original reply was:', reply);
-      // Envia uma mensagem de erro amigável para o cliente
-      return res.status(500).json({ reply: 'Ocorreu um erro ao processar a resposta da IA. Por favor, tente novamente.' });
+      return res.json({ reply: clientReply, action: "collect_contact_info" });
     }
   } catch (e) {
     console.error(e);
@@ -356,11 +350,12 @@ Respostas: ${answersText}`;
 app.post('/api/report-contact', (req, res) => {
   const parsed = contactSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'invalid_request' });
-  const { sessionId, name, contact } = parsed.data;
+  const { sessionId, name, email, phone, cpf } = parsed.data;
   const rpt = reports.find(r => r.sessionId === sessionId);
   if (rpt) {
     rpt.name = name;
-    rpt.contact = contact;
+    // Combine contact details into a single string for the report
+    rpt.contact = `Email: ${email}, Telefone: ${phone}, CPF: ${cpf}`;
   }
   res.json({ ok: true });
 });

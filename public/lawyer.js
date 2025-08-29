@@ -372,9 +372,25 @@ import { getMediaWithFallback, explainGetUserMediaError, isPotentiallyInsecureCo
   function appendReport(r) {
     if (!reportsList) return;
     const li = document.createElement('li');
+    li.className = 'report-item'; // Add a class for styling
+
     const date = new Date(r.timestamp).toLocaleString();
-    const contact = r.name ? ` - ${r.name} (${r.contact || ''})` : '';
-    li.textContent = `${date}${contact}: ${r.text}`;
+    const contact = r.name ? `<strong>${r.name}</strong> (${r.contact || 'sem contato'})` : '';
+
+    // Simple Markdown to HTML
+    let reportHtml = (r.text || '') // Add guard for undefined text
+        .replace(/### (.*)/g, '<h3>$1</h3>') // Headings
+        .replace(/\n/g, '<br>');              // Newlines
+
+    li.innerHTML = `
+        <div class="report-header">
+            <span class="report-date">${date}</span>
+            <span class="report-contact">${contact}</span>
+        </div>
+        <div class="report-content">
+            ${reportHtml}
+        </div>
+    `;
     reportsList.prepend(li); // Adiciona no topo
   }
 
@@ -663,12 +679,33 @@ if (contentForm) {
 }
 
   if (fullscreenBtn) {
-    fullscreenBtn.addEventListener('click', () => {
-      if (document.fullscreenElement) {
-        document.exitFullscreen();
-      } else {
-        videoPanel.requestFullscreen();
-      }
-    });
+    const exitFullscreenBtn = document.getElementById('exitFullscreenBtn');
+
+    function updateFullscreenButtons() {
+        if (document.fullscreenElement) {
+            fullscreenBtn.classList.add('hidden');
+            exitFullscreenBtn.classList.remove('hidden');
+        } else {
+            fullscreenBtn.classList.remove('hidden');
+            exitFullscreenBtn.classList.add('hidden');
+        }
+    }
+
+    if (exitFullscreenBtn && videoPanel) {
+        fullscreenBtn.addEventListener('click', () => {
+            videoPanel.requestFullscreen().catch(err => {
+                console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+            });
+        });
+
+        exitFullscreenBtn.addEventListener('click', () => {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        });
+
+        document.addEventListener('fullscreenchange', updateFullscreenButtons);
+        updateFullscreenButtons(); // Initial check
+    }
   }
 })();

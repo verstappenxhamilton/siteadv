@@ -192,14 +192,51 @@ h2::after {
 .provider-field span { font-size: 14px; }
 
 .reports-list {
-  list-style: disc;
-  padding-left: 20px;
-  max-height: 200px;
+  list-style: none; /* Remove default bullet points */
+  padding-left: 0;
+  max-height: 400px; /* Increase height */
   overflow-y: auto;
   margin-top: 8px;
 }
 
-.reports-list li { margin-bottom: 6px; }
+.report-item {
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.report-date {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.report-contact strong {
+  color: var(--accent);
+}
+
+.report-content h3 {
+  font-size: 16px;
+  color: var(--accent);
+  margin-top: 12px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  padding-bottom: 4px;
+}
+
+.report-content h3:first-child {
+  margin-top: 0;
+}
 
 button.primary {
   background: var(--accent);
@@ -284,7 +321,7 @@ button.danger { background: #ef4444; color: white; }
   align-items: center;
   justify-content: center;
   background: rgba(2,6,23,0.65);
-  z-index: 50;
+  z-index: 1000; /* Ensure it's on top */
 }
 
 .incoming .modal {
@@ -659,42 +696,6 @@ body { scroll-behavior: smooth; }
 @media (min-width: 901px) {
   .contact-panel {
     grid-template-areas: "controls videos";
-    grid-template-columns: minmax(0,1fr) minmax(0,1.2fr);
-    gap: 20px;
-  }
-  .contact-panel .controls-block { grid-area: controls; }
-  .contact-panel .videos { grid-area: videos; }
-}
-/* Mobile: vídeos primeiro, depois controles */
-@media (max-width: 900px) {
-  .contact-panel { grid-template-areas: "videos" "controls"; grid-template-columns: 1fr; gap: 14px; }
-  .videos { grid-template-columns: 1fr; }
-}
-@media (max-width: 600px) {
-  .video-box { min-height: 48vh; }
-  #callInterface .call-actions { flex-wrap: wrap; }
-  #callInterface .call-actions button { flex: 1 1 100%; }
-}
-
-/* Barra de modo (topo à direita do painel) */
-.mode-bar { position: absolute; top: 12px; right: 12px; display: flex; gap: 8px; background: rgba(0,0,0,0.15); border: 1px solid rgba(148,163,184,0.25); padding: 6px 8px; border-radius: 999px; backdrop-filter: blur(6px); z-index: 2; }
-.theme-a .mode-bar, .theme-b .mode-bar, .theme-c .mode-bar { background: rgba(255,255,255,0.8); border-color: rgba(0,0,0,0.08); }
-.mode-bar label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 4px 8px; border-radius: 999px; border: 1px solid transparent; }
-.mode-bar input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; }
-.mode-bar label:has(input:checked) { background: rgba(148,163,184,0.15); border-color: var(--accent); }
-
-/* Controles por tile (sobreposição no canto superior esquerdo) */
-.tile-controls { position: absolute; left: 8px; top: 8px; display: flex; gap: 6px; z-index: 1; }
-.tile-btn { background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 4px 8px; font-size: 12px; cursor: pointer; }
-.tile-btn.active { outline: 2px solid var(--accent); }
-.theme-a .tile-btn, .theme-b .tile-btn, .theme-c .tile-btn { background: rgba(255,255,255,0.85); color: #111; border-color: rgba(0,0,0,0.15); }
-.video-box.video-hidden video { opacity: 0; }
-
-/* ===== Contato (Home) — refinamento de layout ===== */
-/* Desktop: controles à esquerda, vídeos à direita */
-@media (min-width: 901px) {
-  .contact-panel {
-    grid-template-areas: "controls videos";
     grid-template-columns: 1fr 1.2fr;
     gap: 20px;
   }
@@ -814,7 +815,7 @@ body { scroll-behavior: smooth; }
 
 .text-input-wrapper input {
   flex: 1;
-  padding-right: 35px; /* Espaço para o botão X */
+  padding-right: 120px; /* Espaço para o botão "Não sei informar" */
 }
 
 .not-informed-btn {
@@ -825,12 +826,13 @@ body { scroll-behavior: smooth; }
   background: #55667d;
   color: #fff;
   border: none;
-  border-radius: 50%;
-  width: 22px;
-  height: 22px;
+  border-radius: 6px; /* Make it a rounded rectangle */
+  width: auto; /* Auto width */
+  height: auto; /* Auto height */
+  padding: 4px 8px; /* Add some padding */
   cursor: pointer;
   font-size: 12px;
-  line-height: 22px;
+  line-height: 1.4; /* Adjust line height */
   text-align: center;
 }
 
@@ -1139,4 +1141,82 @@ input.not-informed {
   .chat-input input {
     flex-basis: 0;
   }
+}
+
+/* Fullscreen Mobile Layout Fixes */
+.panel:fullscreen {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    background: var(--bg);
+}
+
+.panel:fullscreen .videos {
+    flex: 1; /* Allow videos to take up available space */
+    display: flex;
+    flex-direction: column; /* Stack videos vertically on mobile */
+    height: 100%;
+}
+
+.panel:fullscreen .video-box {
+    flex: 1; /* Each video box takes equal space */
+    min-height: 0; /* Override fixed aspect ratios if necessary */
+}
+
+.panel:fullscreen .video-box video {
+    object-fit: contain; /* Ensure the whole video is visible */
+}
+
+.panel:fullscreen .actions {
+    flex-shrink: 0; /* Prevent action buttons from shrinking */
+}
+
+/* Secretary Chat Visual Improvements */
+#aiChat {
+    background: rgba(11, 18, 36, 0.8);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 16px;
+    padding: 16px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+}
+
+#aiChat .chat-messages {
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+#aiChat .chat-message {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    animation: slideInUp 0.5s ease forwards;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#aiChat .chat-message-assistant {
+    background: #1f2937; /* gray-800 */
+    border-left: 3px solid var(--accent);
+}
+
+#aiChat .chat-message-user {
+    background: var(--accent);
+    border-bottom-right-radius: 4px;
+    color: #1a2e1f; /* Darker text for better contrast */
+    font-weight: 500;
+}
+
+#aiChat #question-form {
+    background: rgba(17, 24, 39, 0.7);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 12px;
 }

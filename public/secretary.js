@@ -73,7 +73,20 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       if (!response.ok) throw new Error('Falha ao buscar perguntas.');
 
-      const data = await response.json();
+      const responseText = await response.text();
+      let data;
+      try {
+        // Attempt to parse as direct JSON first
+        data = JSON.parse(responseText);
+      } catch (e) {
+        // If direct parsing fails, try to extract from markdown
+        const jsonMatch = responseText.match(/```json\n([\s\S]*?)\n```/);
+        if (jsonMatch && jsonMatch[1]) {
+          data = JSON.parse(jsonMatch[1]);
+        } else {
+          throw new Error('Invalid JSON response from server.');
+        }
+      }
       intakeState.summary = summary;
       intakeState.questions = data.questions;
       intakeState.stage = 'questions';
@@ -110,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
           inputHtml = `
             <div class="text-input-wrapper">
               <input type="${q.type || 'text'}" id="${q.id}" name="${q.id}" placeholder="Sua resposta...">
-              <button class="not-informed-btn" data-question-id="${q.id}" title="Não sei/Não tenho a informação">X</button>
+              <button class="not-informed-btn" data-question-id="${q.id}">Não sei informar</button>
             </div>
           `;
       }
@@ -196,15 +209,30 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       if (!response.ok) throw new Error('Falha ao enviar respostas.');
 
-      const data = await response.json();
+      const responseText = await response.text();
+      let data;
+      try {
+        // Attempt to parse as direct JSON first
+        data = JSON.parse(responseText);
+      } catch (e) {
+        // If direct parsing fails, try to extract from markdown
+        const jsonMatch = responseText.match(/```json\n([\s\S]*?)\n```/);
+        if (jsonMatch && jsonMatch[1]) {
+          data = JSON.parse(jsonMatch[1]);
+        } else {
+          throw new Error('Invalid JSON response from server.');
+        }
+      }
       removeTypingIndicator();
 
-      if (data.questions) {
+      if (data.questions && data.questions.length > 0) {
         intakeState.questions = data.questions;
         displayQuestions(data.questions);
+      } else if (data.action === 'collect_contact_info') { // New condition
+        appendMessage(data.reply, 'assistant'); // Display AI's final message before form
+        displayPersonalDataForm();
       } else {
         appendMessage(data.reply, 'assistant');
-        promptForContact();
       }
     } catch (error) {
       removeTypingIndicator();
@@ -213,51 +241,56 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function promptForContact() {
-    appendMessage('Para um retorno mais ágil, por favor, deixe seu nome e um contato (email ou telefone).', 'assistant');
+  function displayPersonalDataForm() {
     intakeState.stage = 'contact';
-    aiInput.style.display = 'block';
-    aiSend.style.display = 'block';
-    aiInput.placeholder = 'Seu nome e contato...';
-    disableInput(false);
-    aiInput.focus();
+    const formHtml = `
+      <div id="personal-data-form" class="form-grid">
+        <strong>Para finalizar, por favor, preencha seus dados:</strong>
+        <label>Nome Completo: <input type="text" name="name" required></label>
+        <label>Email: <input type="email" name="email" required></label>
+        <label>Telefone: <input type="tel" name="phone" required></label>
+        <label>CPF: <input type="text" name="cpf" required></label>
+        <button id="submit-personal-data" class="primary">Enviar Dados</button>
+      </div>
+    `;
+    const formContainer = appendMessage(formHtml, 'assistant', 'html');
+    
+    document.getElementById('submit-personal-data').addEventListener('click', handlePersonalDataSubmit);
+    
+    aiInput.style.display = 'none';
+    aiSend.style.display = 'none';
   }
 
-  async function handleContactInfo() {
-    const contactInfo = aiInput.value.trim();
-    if (!contactInfo) return;
+  async function handlePersonalDataSubmit() {
+    const form = document.getElementById('personal-data-form');
+    const name = form.querySelector('[name="name"]').value;
+    const email = form.querySelector('[name="email"]').value;
+    const phone = form.querySelector('[name="phone"]').value;
+    const cpf = form.querySelector('[name="cpf"]').value;
 
-    appendMessage(contactInfo, 'user');
-    disableInput();
-    aiInput.value = '';
-    aiInput.placeholder = 'Obrigado! Em breve entraremos em contato.';
+    if (!name || !email || !phone || !cpf) {
+      alert('Por favor, preencha todos os campos.');
+      return;
+    }
 
-    const parts = contactInfo.split(/[\s,]+/);
-    const name = parts[0] || 'Não informado';
-    const contact = parts.slice(1).join(' ') || 'Não informado';
+    form.innerHTML = '<p>Obrigado! Suas informações foram recebidas. Entraremos em contato em breve.</p>';
 
     try {
       await fetch('/api/report-contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, name, contact })
+        body: JSON.stringify({ sessionId, name, email, phone, cpf })
       });
     } catch (error) {
       console.error('Failed to save contact info:', error);
     }
-
-    appendMessage('Obrigado! Suas informações foram recebidas. Entraremos em contato em breve.', 'assistant');
     intakeState.stage = 'done';
   }
 
   async function handleSend() {
-    switch (intakeState.stage) {
-      case 'summary':
-        await handleInitialMessage();
-        break;
-      case 'contact':
-        await handleContactInfo();
-        break;
+    // This function is now only for the initial message
+    if (intakeState.stage === 'summary') {
+      await handleInitialMessage();
     }
   }
 
