@@ -214,17 +214,17 @@ body.theme-d::before { background: radial-gradient(circle at var(--bg-x) var(--b
    Tema E — Oceanic
    ========================================= */
 .theme-e {
-  --bg: #F0FDFA;
-  --panel: #FFFFFF;
-  --text: #065F46;
-  --muted: #34D399;
-  --accent: #047857;
-  --accent-2: #F43F5E;
-  --focus: #6EE7B7;
+  --bg: #E0F7FA; /* Light Cyan */
+  --panel: #FFFFFF; /* White */
+  --text: #006064; /* Dark Cyan */
+  --muted: #4DD0E1; /* Light Blue-Cyan */
+  --accent: #00BCD4; /* Cyan */
+  --accent-2: #FF5252; /* Red (for errors/alerts) */
+  --focus: #80DEEA; /* Lighter Cyan */
 }
 body.theme-e { background: var(--bg); color: var(--text); }
 body.theme-e::before { background: radial-gradient(circle at var(--bg-x) var(--bg-y), rgba(4, 120, 87, 0.15), transparent 60%); }
-.theme-e .site-header { background: rgba(255,255,255,0.9); border-bottom: 1px solid #CCFBF1; }
+.theme-e .site-header { background: rgba(224, 247, 250, 0.9); border-bottom: 1px solid rgba(0, 188, 212, 0.3); }
 .theme-e .nav-links a { color: var(--text); }
 .theme-e .panel { background: var(--panel); border: 1px solid #CCFBF1; box-shadow: 0 1px 2px rgba(0,0,0,0.06); padding: 20px; }
 .theme-e .area-card { background: var(--panel); border: 1px solid #CCFBF1; }
@@ -292,17 +292,17 @@ body.theme-f::before { background: radial-gradient(circle at var(--bg-x) var(--b
    Tema G — Royal
    ========================================= */
 .theme-g {
-  --bg: #FFFBEB;
-  --panel: #FFFFFF;
-  --text: #78350F;
-  --muted: #B45309;
-  --accent: #D97706;
-  --accent-2: #A855F7;
-  --focus: #FDE68A;
+  --bg: #21003D; /* Deep Purple */
+  --panel: #3A006B; /* Darker Purple */
+  --text: #E0BBE4; /* Light Purple */
+  --muted: #957DAD; /* Muted Purple */
+  --accent: #FFD700; /* Gold */
+  --accent-2: #FF6F61; /* Coral (for errors/alerts) */
+  --focus: #DAA520; /* Goldenrod */
 }
 body.theme-g { background: var(--bg); color: var(--text); }
 body.theme-g::before { background: radial-gradient(circle at var(--bg-x) var(--bg-y), rgba(217, 119, 6, 0.15), transparent 60%); }
-.theme-g .site-header { background: rgba(255,255,255,0.9); border-bottom: 1px solid #FEF3C7; }
+.theme-g .site-header { background: rgba(58, 0, 107, 0.85); border-bottom: 1px solid rgba(255, 215, 0, 0.3); }
 .theme-g .nav-links a { color: var(--text); }
 .theme-g .panel { background: var(--panel); border: 1px solid #FEF3C7; box-shadow: 0 1px 2px rgba(0,0,0,0.06); padding: 20px; }
 .theme-g .area-card { background: var(--panel); border: 1px solid #FEF3C7; }

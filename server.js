@@ -105,6 +105,20 @@ app.post('/api/content', (req, res) => {
   });
 });
 
+// New endpoint to list video files
+app.get('/api/videos', (req, res) => {
+  const videosDir = path.join(__dirname, 'public', 'videos');
+  fs.readdir(videosDir, (err, files) => {
+    if (err) {
+      console.error('Error reading videos directory:', err);
+      // If directory doesn't exist or is empty, return empty array
+      return res.json([]);
+    }
+    const videoFiles = files.filter(file => file.endsWith('.mp4')).sort(); // Added .sort()
+    res.json(videoFiles.map(file => `videos/${file}`)); // Return relative paths
+  });
+});
+
 const messageSchema = z.object({
   sessionId: z.string(),
   message: z.string().min(1)

@@ -112,6 +112,10 @@
   </section>
 
   <section class="hero-section reveal">
+    <video autoplay muted playsinline class="hero-video">
+      Seu navegador não suporta o elemento de vídeo.
+    </video>
+    <div class="hero-overlay"></div>
     <div class="container">
       <h1>Defendendo seus direitos com excelência</h1>
       <p>Atendimento jurídico moderno, humano e eficiente.</p>
@@ -152,10 +156,14 @@
     <div class="container">
       <h2 id="formTitle">Envie uma mensagem</h2>
       <form class="contact-form">
-        <input type="text" name="nome" placeholder="Seu nome" required />
-        <input type="email" name="email" placeholder="Seu e-mail" required />
-        <input type="tel" name="celular" placeholder="Seu celular" />
-        <textarea name="mensagem" rows="5" placeholder="Sua mensagem" required></textarea>
+        <label for="contactName">Seu nome</label>
+        <input type="text" id="contactName" name="nome" placeholder="Seu nome" required />
+        <label for="contactEmail">Seu e-mail</label>
+        <input type="email" id="contactEmail" name="email" placeholder="Seu e-mail" required />
+        <label for="contactPhone">Seu celular</label>
+        <input type="tel" id="contactPhone" name="celular" placeholder="Seu celular" />
+        <label for="contactMessage">Sua mensagem</label>
+        <textarea id="contactMessage" name="mensagem" rows="5" placeholder="Sua mensagem" required></textarea>
         <button type="submit" class="primary">Enviar</button>
       </form>
       <div id="formStatus" class="form-status hidden"></div>

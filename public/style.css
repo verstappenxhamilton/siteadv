@@ -64,7 +64,7 @@ h2::after {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 0; /* Aumentado */
+  padding: 8px 0;
 }
 
 .brand {
@@ -471,11 +471,11 @@ body { scroll-behavior: smooth; }
 .site-header {
   position: sticky;
   top: 0;
-  background: linear-gradient(to right, rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.95));
+  background: rgba(15, 23, 42, 0.9);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid rgba(148, 163, 184, 0.1);
   z-index: 50;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  box-shadow: 0 1px 5px rgba(0,0,0,0.1);
 }
 
 .nav-links a {
@@ -503,6 +503,49 @@ body { scroll-behavior: smooth; }
 
 .hero-section h1 { font-size: 42px; margin-bottom: 16px; }
 .hero-section p { color: var(--muted); margin-bottom: 24px; }
+
+.hero-section {
+  position: relative; /* Needed for absolute positioning of video and overlay */
+  overflow: hidden; /* Hide video overflow */
+  color: white; /* Ensure text is readable over dark video/overlay */
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.5); /* Add text shadow for readability */
+}
+
+.hero-video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  z-index: -1;
+  transform: translateX(-50%) translateY(-50%);
+  background-size: cover;
+  transition: opacity 1s ease-in-out; /* Add transition for fade effect */
+}
+
+.hero-video.fade-out {
+  opacity: 0;
+}
+
+.hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent black overlay */
+  /* Modern effect: subtle gradient or color filter */
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.7) 100%);
+  z-index: 0; /* Between video and content */
+}
+
+/* Ensure content is above the video and overlay */
+.hero-section .container {
+  position: relative;
+  z-index: 1;
+}
 
 .about-section,
 .areas-section,
@@ -961,6 +1004,156 @@ input.not-informed {
     outline: none;
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(var(--accent), 0.2);
+}
+
+/* Content Editor UI/UX Improvements */
+.content-save-btn {
+  margin-top: 20px; /* Re-add margin via CSS */
+}
+
+/* Improve details/summary appearance */
+#contentForm details {
+  margin-bottom: 16px; /* Consistent spacing between sections */
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 12px;
+  background: rgba(0,0,0,0.15); /* Slightly darker background for collapsed state */
+  overflow: hidden; /* Ensures border-radius applies to content */
+}
+
+#contentForm summary {
+  display: flex; /* Use flexbox for alignment */
+  justify-content: space-between; /* Space out title and arrow */
+  align-items: center; /* Vertically align */
+  cursor: pointer;
+  font-weight: 600;
+  padding: 16px;
+  background: rgba(0,0,0,0.25); /* Darker background for summary */
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2); /* Separator */
+  border-radius: 12px 12px 0 0; /* Rounded top corners */
+  margin: -1px; /* Adjust to align with parent border */
+  position: relative; /* For z-index */
+  z-index: 1; /* Ensure it's above content */
+}
+
+/* Remove default marker and add custom arrow */
+#contentForm summary::-webkit-details-marker { display: none; }
+#contentForm summary::after {
+  content: '▼'; /* Unicode down arrow */
+  font-size: 14px;
+  transition: transform 0.2s ease;
+}
+
+#contentForm details[open] summary::after {
+  transform: rotate(180deg);
+}
+
+/* Content inside details */
+#contentForm details > div {
+  padding: 16px; /* Padding for content when expanded */
+}
+
+/* Consistent input styling within content editor */
+#contentForm input[type="text"],
+#contentForm textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: #0f172a;
+  color: var(--text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#contentForm input[type="text"]:focus,
+#contentForm textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(var(--accent), 0.2);
+}
+
+/* Improve "Add" buttons */
+#contentForm #addArea,
+#contentForm #addSocial {
+  margin-top: 10px;
+  width: fit-content; /* Adjust width to content */
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+/* Content Editor UI/UX Improvements */
+.content-save-btn {
+  margin-top: 20px; /* Re-add margin via CSS */
+}
+
+/* Improve details/summary appearance */
+#contentForm details {
+  margin-bottom: 16px; /* Consistent spacing between sections */
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 12px;
+  background: rgba(0,0,0,0.15); /* Slightly darker background for collapsed state */
+  overflow: hidden; /* Ensures border-radius applies to content */
+}
+
+#contentForm summary {
+  display: flex; /* Use flexbox for alignment */
+  justify-content: space-between; /* Space out title and arrow */
+  align-items: center; /* Vertically align */
+  cursor: pointer;
+  font-weight: 600;
+  padding: 16px;
+  background: rgba(0,0,0,0.25); /* Darker background for summary */
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2); /* Separator */
+  border-radius: 12px 12px 0 0; /* Rounded top corners */
+  margin: -1px; /* Adjust to align with parent border */
+  position: relative; /* For z-index */
+  z-index: 1; /* Ensure it's above content */
+}
+
+/* Remove default marker and add custom arrow */
+#contentForm summary::-webkit-details-marker { display: none; }
+#contentForm summary::after {
+  content: '▼'; /* Unicode down arrow */
+  font-size: 14px;
+  transition: transform 0.2s ease;
+}
+
+#contentForm details[open] summary::after {
+  transform: rotate(180deg);
+}
+
+/* Content inside details */
+#contentForm details > div {
+  padding: 16px; /* Padding for content when expanded */
+}
+
+/* Consistent input styling within content editor */
+#contentForm input[type="text"],
+#contentForm textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: #0f172a;
+  color: var(--text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#contentForm input[type="text"]:focus,
+#contentForm textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(var(--accent), 0.2);
+}
+
+/* Improve "Add" buttons */
+#contentForm #addArea,
+#contentForm #addSocial {
+  margin-top: 10px;
+  width: fit-content; /* Adjust width to content */
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
 }
 
 #contentForm details {
