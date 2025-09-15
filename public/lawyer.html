@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Painel do Advogado</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bs-primary: #005ea2;
+      --bs-primary-rgb: 0, 94, 162;
+      --bs-body-font-family: 'Poppins', sans-serif;
+    }
+    body {
+      background-color: #f4f6f9;
+    }
+    .chat-messages {
+      min-height: 250px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .video-box {
+      background-color: #000;
+      aspect-ratio: 16/9;
+    }
+    .video-box video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    /* === Estilos para Relatórios === */
+    .report-card {
+      border: 1px solid #dee2e6;
+    }
+    .report-card-header {
+      background-color: #f8f9fa;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #dee2e6;
+    }
+    .report-card-body {
+      padding: 1rem;
+    }
+    .report-card-body h5 {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    .report-card-body .client-info p {
+      margin-bottom: 0.25rem;
+      color: #495057;
+    }
+    .report-card-body .client-info i {
+      width: 20px;
+    }
+    .report-card details {
+      border-top: 1px solid #e9ecef;
+      margin-top: 1rem;
+      padding-top: 1rem;
+    }
+    .report-card summary {
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--bs-primary);
+    }
+    .report-card summary::marker {
+      color: var(--bs-primary);
+    }
+    .report-content {
+      margin-top: 0.75rem;
+      padding: 1rem;
+      background-color: #f8f9fa;
+      border-radius: 0.375rem;
+      font-size: 0.9rem;
+      color: #212529;
+    }
+    .report-content h3 {
+      font-size: 1.1rem;
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
+      padding-bottom: 0.25rem;
+      border-bottom: 1px solid #dee2e6;
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <div class="container">
+      <a class="navbar-brand fw-bold fs-4" href="#">Painel do Advogado</a>
+      <div class="badge bg-success">Você está online</div>
+      <a class="btn btn-outline-light ms-auto" href="/">Ver Página do Cliente</a>
+    </div>
+  </header>
+
+  <main class="container mt-4">
+    <div class="row g-4">
+      <!-- Coluna Esquerda: Interação Principal -->
+      <div class="col-lg-7">
+        <div class="card shadow-sm mb-4" id="videoPanel">
+          <div class="card-header fw-bold">Atendimento por Vídeo</div>
+          <div class="card-body">
+            <div class="alert alert-info small">Deixe esta página aberta para receber chamadas.</div>
+            <div class="row g-3">
+              <div class="col-12">
+                <div class="video-box rounded"><video id="remoteVideo" playsinline autoplay></video></div>
+                <div class="text-muted small mt-1">Cliente</div>
+              </div>
+              <div class="col-12">
+                <div class="video-box rounded"><video id="localVideo" playsinline autoplay muted></video></div>
+                <div class="text-muted small mt-1">Você (mudo)</div>
+              </div>
+            </div>
+            <div class="d-flex gap-2 mt-3">
+              <button id="hangupBtn" class="btn btn-danger" disabled><i class="bi bi-telephone-x-fill me-2"></i>Encerrar</button>
+              <button id="testBtn" class="btn btn-secondary"><i class="bi bi-gear-fill me-2"></i>Testar Dispositivos</button>
+            </div>
+            <div id="info" class="mt-3 text-muted">Aguardando chamadas...</div>
+          </div>
+        </div>
+
+        <div class="card shadow-sm" id="chatPanel">
+          <div class="card-header fw-bold">Chat de Texto</div>
+          <div class="card-body">
+            <div id="messages" class="chat-messages p-3 bg-light rounded-3 d-flex flex-column gap-2"></div>
+            <div id="quickReplies" class="mt-2 d-flex gap-2 flex-wrap">
+              <button class="btn btn-sm btn-outline-secondary quick-reply" data-msg="Olá, como posso ajudar?">Saudação</button>
+              <button class="btn btn-sm btn-outline-secondary quick-reply" data-msg="Poderia fornecer mais detalhes?">Mais detalhes</button>
+              <button class="btn btn-sm btn-outline-secondary quick-reply" data-msg="Vamos agendar uma reunião para discutir melhor?">Agendar</button>
+              <button class="btn btn-sm btn-outline-secondary quick-reply" data-msg="Estou analisando seu caso e retornarei em breve.">Analisar</button>
+            </div>
+            <div class="input-group mt-3">
+              <input id="chatInput" type="text" class="form-control" placeholder="Digite sua mensagem">
+              <button id="sendBtn" class="btn btn-primary" disabled><i class="bi bi-send-fill"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coluna Direita: Ferramentas e Relatórios -->
+      <div class="col-lg-5">
+        <div class="card shadow-sm mb-4" id="aiPanel">
+          <div class="card-header fw-bold">Assistente de IA</div>
+          <div class="card-body">
+            <div id="aiMessages" class="chat-messages p-3 bg-light rounded-3 d-flex flex-column gap-2"></div>
+            <div class="input-group mt-3">
+              <input id="aiInput" type="text" class="form-control" placeholder="Pergunte à IA">
+              <button id="aiSendBtn" class="btn btn-secondary"><i class="bi bi-send-fill"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+          <div class="card-header fw-bold">Configurações de IA</div>
+          <div class="card-body">
+            <form id="configForm">
+              <div class="mb-3">
+                <label class="form-label">Provedor</label>
+                <div class="provider-options d-flex gap-2 flex-wrap">
+                  <div class="form-check"><input type="radio" name="provider" value="openai" class="form-check-input" checked/><label class="form-check-label">OpenAI</label></div>
+                  <div class="form-check"><input type="radio" name="provider" value="anthropic" class="form-check-input"/><label class="form-check-label">Anthropic</label></div>
+                  <div class="form-check"><input type="radio" name="provider" value="groq" class="form-check-input"/><label class="form-check-label">Groq</label></div>
+                  <div class="form-check"><input type="radio" name="provider" value="gemini" class="form-check-input"/><label class="form-check-label">Gemini</label></div>
+                </div>
+              </div>
+              <div class="mb-3"><label class="form-label">Modelo</label><input type="text" name="model" class="form-control"/></div>
+              <div class="row">
+                <div class="col-md-4 mb-3"><label class="form-label">Max Tokens</label><input type="number" name="max_output_tokens" value="200" class="form-control"/></div>
+                <div class="col-md-4 mb-3"><label class="form-label">Temp</label><input type="number" step="0.1" name="temperature" value="0.7" class="form-control"/></div>
+                <div class="col-md-4 mb-3"><label class="form-label">Top P</label><input type="number" step="0.1" name="top_p" value="1" class="form-control"/></div>
+              </div>
+              <div class="mb-3"><label class="form-label">Prompt</label><textarea name="prompt" rows="5" class="form-control">Você é um advogado virtual do escritório. Responda em português formal e breve. Ao receber o resumo do cliente, gere perguntas objetivas para coletar dados e verificar documentos, incluindo opções como usucapião judicial ou extrajudicial e seus custos no TJMG quando pertinente. Após as respostas do cliente, dê uma orientação final e finalize com uma linha "RELATORIO:" resumindo as informações para o advogado.</textarea></div>
+              <button type="submit" class="btn btn-primary">Salvar Config</button>
+            </form>
+            <hr class="my-4">
+            <form id="keyForm">
+              <h5 class="mb-3">API Keys</h5>
+              <div class="key-field mb-2" data-provider="openai"><label class="form-label">OpenAI</label><input type="password" name="openai" class="form-control"/></div>
+              <div class="key-field mb-2" data-provider="anthropic"><label class="form-label">Anthropic</label><input type="password" name="anthropic" class="form-control"/></div>
+              <div class="key-field mb-2" data-provider="groq"><label class="form-label">Groq</label><input type="password" name="groq" class="form-control"/></div>
+              <div class="key-field mb-2" data-provider="gemini"><label class="form-label">Gemini</label><input type="password" name="gemini" class="form-control"/></div>
+              <button type="submit" class="btn btn-secondary mt-2">Salvar Chaves</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="card shadow-sm" id="reportsPanel">
+          <div class="card-header fw-bold d-flex justify-content-between align-items-center">
+            Relatórios
+            <button id="refreshReports" class="btn btn-sm btn-primary"><i class="bi bi-arrow-clockwise me-1"></i>Atualizar</button>
+          </div>
+          <div class="card-body">
+            <div id="reportsList" class="d-flex flex-column gap-3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="modal fade" id="incoming" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Chamada Recebida</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center">
+          <p class="fs-5">Um cliente está ligando agora.</p>
+        </div>
+        <div class="modal-footer">
+          <button id="rejectBtn" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Recusar</button>
+          <button id="acceptBtn" type="button" class="btn btn-primary">Atender</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module" src="/lawyer.js"></script>
+</body>
+</html>

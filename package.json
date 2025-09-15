@@ -1,0 +1,19 @@
+{
+  "name": "site-advogado-webrtc",
+  "version": "1.0.0",
+  "description": "Site de advogado com chamada de vídeo (WebRTC) e presença online",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server/server.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^17.2.1",
+    "express": "^4.19.2",
+    "express-rate-limit": "^6.10.0",
+    "node-fetch": "^2.6.7",
+    "socket.io": "^4.7.5",
+    "zod": "^3.22.4"
+  }
+}
