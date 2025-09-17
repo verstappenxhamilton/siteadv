@@ -7,7 +7,24 @@ const path = require('path');
 const { Server } = require('socket.io');
 const rateLimit = require('express-rate-limit');
 const { z } = require('zod');
-const { generate } = require('./providers');
+const { generate } = require('./providers.cjs');
+
+const projectRoot = path.resolve(__dirname, '..');
+const dataDir = path.join(projectRoot, 'server-data');
+const videosDir = path.join(dataDir, 'videos');
+const contentPath = path.join(dataDir, 'content.json');
+const configPath = path.join(dataDir, 'admin-config.json');
+const keysPath = path.join(dataDir, 'api-keys.json');
+
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
+if (!fs.existsSync(videosDir)) {
+  fs.mkdirSync(videosDir, { recursive: true });
+}
+if (!fs.existsSync(contentPath)) {
+  fs.writeFileSync(contentPath, JSON.stringify({}, null, 2), 'utf8');
+}
 
 const app = express();
 // Permitir que o Express confie nos cabeçalhos X-Forwarded-* quando estiver atrás de proxies
@@ -40,8 +57,12 @@ const io = new Server(server, {
 });
 
 // Middleware
-app.use(express.static('public'));
-app.use(express.json());
+const staticPublicDir = path.join(projectRoot, 'public');
+if (fs.existsSync(staticPublicDir)) {
+  app.use(express.static(staticPublicDir));
+}
+app.use('/videos', express.static(videosDir));
+app.use(express.json({ limit: '2mb' }));
 const chatLimiter = rateLimit({ windowMs: 60 * 1000, max: 20 });
 
 const adminConfig = {
@@ -64,6 +85,42 @@ const adminConfig = {
   }
 };
 
+try {
+  if (fs.existsSync(configPath)) {
+    const storedConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    if (storedConfig && typeof storedConfig === 'object') {
+      if (storedConfig.provider) {
+        adminConfig.provider = storedConfig.provider;
+      }
+      if (storedConfig.prompt) {
+        adminConfig.prompt = storedConfig.prompt;
+      }
+      if (storedConfig.parameters && typeof storedConfig.parameters === 'object') {
+        adminConfig.parameters = { ...adminConfig.parameters, ...storedConfig.parameters };
+      }
+      if (storedConfig.features && typeof storedConfig.features === 'object') {
+        adminConfig.features = { ...adminConfig.features, ...storedConfig.features };
+      }
+      if (storedConfig.limits && typeof storedConfig.limits === 'object') {
+        adminConfig.limits = { ...adminConfig.limits, ...storedConfig.limits };
+      }
+    }
+  }
+} catch (error) {
+  console.warn('Falha ao carregar configuracao persistida:', error.message);
+}
+
+try {
+  if (fs.existsSync(keysPath)) {
+    const storedKeys = JSON.parse(fs.readFileSync(keysPath, 'utf8'));
+    if (storedKeys && typeof storedKeys === 'object') {
+      adminConfig.apiKeys = { ...adminConfig.apiKeys, ...storedKeys };
+    }
+  }
+} catch (error) {
+  console.warn('Falha ao carregar chaves persistidas:', error.message);
+}
+
 const sessions = {};
 const reports = [];
 const intakes = {};
@@ -77,7 +134,6 @@ app.post('/contact', (req, res) => {
 
 // Endpoints for content management
 app.get('/api/content', (req, res) => {
-  const contentPath = path.join(__dirname, 'public', 'content.json');
   fs.readFile(contentPath, 'utf8', (err, data) => {
     if (err) {
       console.error('Error reading content.json:', err);
@@ -88,7 +144,6 @@ app.get('/api/content', (req, res) => {
 });
 
 app.post('/api/content', (req, res) => {
-  const contentPath = path.join(__dirname, 'public', 'content.json');
   const newContent = req.body;
 
   // Basic validation
@@ -107,7 +162,6 @@ app.post('/api/content', (req, res) => {
 
 // New endpoint to list video files
 app.get('/api/videos', (req, res) => {
-  const videosDir = path.join(__dirname, 'public', 'videos');
   fs.readdir(videosDir, (err, files) => {
     if (err) {
       console.error('Error reading videos directory:', err);
@@ -404,15 +458,51 @@ app.get('/admin/config', (req, res) => {
 app.post('/admin/config', (req, res) => {
   const parsed = configSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'invalid_config' });
-  Object.assign(adminConfig, parsed.data);
-  res.json({ ok: true });
+
+  const updates = parsed.data;
+  if (updates.provider) {
+    adminConfig.provider = updates.provider;
+  }
+  if (updates.prompt) {
+    adminConfig.prompt = updates.prompt;
+  }
+  if (updates.parameters) {
+    adminConfig.parameters = { ...adminConfig.parameters, ...updates.parameters };
+  }
+  if (updates.features) {
+    adminConfig.features = { ...adminConfig.features, ...updates.features };
+  }
+  if (updates.limits) {
+    adminConfig.limits = { ...adminConfig.limits, ...updates.limits };
+  }
+
+  try {
+    const safeConfig = {
+      provider: adminConfig.provider,
+      parameters: adminConfig.parameters,
+      prompt: adminConfig.prompt,
+      features: adminConfig.features,
+      limits: adminConfig.limits
+    };
+    fs.writeFileSync(configPath, JSON.stringify(safeConfig, null, 2), 'utf8');
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('Failed to persist config:', error);
+    res.status(500).json({ error: 'persist_config_failed' });
+  }
 });
 
 app.post('/admin/keys', (req, res) => {
   const parsed = keySchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'invalid_keys' });
   adminConfig.apiKeys = { ...adminConfig.apiKeys, ...parsed.data };
-  res.json({ ok: true });
+  try {
+    fs.writeFileSync(keysPath, JSON.stringify(adminConfig.apiKeys, null, 2), 'utf8');
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('Failed to persist API keys:', error);
+    res.status(500).json({ error: 'persist_keys_failed' });
+  }
 });
 
 app.get('/admin/keys', (req, res) => {
@@ -533,13 +623,52 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 3000;
-const HOST = process.env.HOST || '0.0.0.0';
-server.listen(PORT, HOST, () => {
-  const scheme = usingHttps ? 'https' : 'http';
-  console.log(`Servidor iniciado em ${scheme}://localhost:${PORT}`);
-  console.log(`Acesse via IP local: ${scheme}://<SEU_IP_LOCAL>:${PORT}`);
-  if (!usingHttps) {
-    console.log('Aviso: HTTP em IP (ex.: 192.168.x.x) pode bloquear câmera/microfone. Configure HTTPS local.');
+const cliArgs = new Set(process.argv.slice(2));
+const isPreview = cliArgs.has('--preview');
+const isProduction = cliArgs.has('--production') || isPreview || process.env.NODE_ENV === 'production';
+const useViteDevServer = !isProduction;
+
+async function startServer() {
+  if (useViteDevServer) {
+    const { createServer: createViteServer } = await import('vite');
+    const vite = await createViteServer({
+      root: projectRoot,
+      server: { middlewareMode: true },
+      appType: 'spa'
+    });
+    app.use(vite.middlewares);
+  } else {
+    const distPath = path.join(projectRoot, 'dist');
+    const indexHtmlPath = path.join(distPath, 'index.html');
+    if (fs.existsSync(distPath)) {
+      app.use(express.static(distPath));
+    }
+    app.get('*', (req, res, next) => {
+      if (req.method !== 'GET') return next();
+      if (req.path.startsWith('/api') || req.path.startsWith('/admin') || req.path.startsWith('/videos') || req.path.startsWith('/socket.io') || req.path.startsWith('/contact')) {
+        return next();
+      }
+      if (fs.existsSync(indexHtmlPath)) {
+        res.sendFile(indexHtmlPath);
+      } else {
+        res.status(404).send('Not Found');
+      }
+    });
   }
+
+  const PORT = Number(process.env.PORT) || 5173;
+  const HOST = process.env.HOST || '0.0.0.0';
+  server.listen(PORT, HOST, () => {
+    const scheme = usingHttps ? 'https' : 'http';
+    console.log(`Servidor iniciado em ${scheme}://localhost:${PORT}`);
+    console.log(`Acesse via IP local: ${scheme}://<SEU_IP_LOCAL>:${PORT}`);
+    if (!usingHttps) {
+      console.log('Aviso: HTTP em IP (ex.: 192.168.x.x) pode bloquear câmera/microfone. Configure HTTPS local.');
+    }
+  });
+}
+
+startServer().catch((error) => {
+  console.error('Falha ao iniciar servidor:', error);
+  process.exit(1);
 });
