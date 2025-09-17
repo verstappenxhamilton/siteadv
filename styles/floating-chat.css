@@ -46,6 +46,10 @@
   transform: translateY(0);
 }
 
+.chat-window .card-body {
+  min-height: 0;
+}
+
 .chat-scrollable {
   flex-grow: 1;
   overflow-y: auto;

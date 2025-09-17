@@ -19,16 +19,16 @@ const Header: React.FC = () => {
       <a href="#services" onClick={closeMenu} className="hover:text-[#B98F58] transition-colors font-medium">Servicos</a>
       <a href="#team" onClick={closeMenu} className="hover:text-[#B98F58] transition-colors font-medium">O Fundador</a>
       <a href="#testimonials" onClick={closeMenu} className="hover:text-[#B98F58] transition-colors font-medium">Clientes</a>
-      <a
-        href="#contact"
-        onClick={closeMenu}
-        className="mt-4 md:mt-0 md:ml-4 px-4 py-2 border border-white rounded-sm hover:bg-white hover:text-[#0D1B2A] transition-colors font-bold"
-      >
-        CONTATO
-      </a>
       <Link to="/lawyer" onClick={closeMenu} className="hover:text-[#B98F58] transition-colors font-medium">
         Area do Advogado
       </Link>
+      <a
+        href="#contact"
+        onClick={closeMenu}
+        className="mt-4 md:mt-0 md:ml-4 px-4 py-2 border border-white rounded-sm hover:bg-white hover:text-[#0D1B2A] transition-colors font-bold inline-flex items-center justify-center md:-translate-y-0.5"
+      >
+        CONTATO
+      </a>
     </>
   );
 
