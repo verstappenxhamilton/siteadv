@@ -1,58 +1,119 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pavan &amp; Associados</title>
+    <meta name="description" content="Atendimento jurídico moderno com contato direto com o advogado." />
+    <meta name="theme-color" content="#0B1220" id="themeColor" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  </head>
+  <body class="antialiased" data-whatsapp-number="" style="overflow-x:hidden;">
+    <div id="root"></div>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pavan & Associados</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-    html {
-      scroll-behavior: smooth;
-      overflow-x: hidden; /* Added for aggressive horizontal scroll prevention */
-      max-width: 100vw;
-    }
-    
-    body {
-      font-family: 'Lora', serif;
-      overflow-x: hidden; /* Added for aggressive horizontal scroll prevention */
-      max-width: 100vw;
-    }
-    h1, h2, h3, h4, h5, h6, button, a[href="#contact"] {
-      font-family: 'Montserrat', sans-serif;
-    }
-    
-    
-    .fade-in-section {
-      opacity: 0;
-      transition: opacity 0.6s ease-out;
-    }
-    .fade-in-section.is-visible {
-      opacity: 1;
-    }
-  </style>
-<script type="importmap">
-{
-  "imports": {
-    "react": "https://aistudiocdn.com/react@^19.1.1",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
-    "react/": "https://aistudiocdn.com/react@^19.1.1/"
-  }
-}
-</script>
-<link rel="stylesheet" href="/style.css">
-</head>
-<body class="antialiased" style="overflow-x: hidden;">
-  <div id="root"></div>
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-</body>
+    <!-- Floating chat kept outside of React tree to preserve existing integrations -->
+    <div id="floating-chat-container" aria-live="polite">
+      <div id="chat-window" class="card shadow-lg" role="dialog" aria-labelledby="chatTitle" aria-modal="false">
+        <div class="card-header bg-primary text-white d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-2">
+            <span class="status-dot online" aria-hidden="true"></span>
+            <div>
+              <h5 id="chatTitle" class="mb-0 fs-6">Secretária Virtual</h5>
+              <div class="small opacity-75">Responde em segundos</div>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <button id="minimize-chat-btn" type="button" class="btn btn-sm btn-light" aria-label="Minimizar chat">
+              <i class="bi bi-dash"></i>
+            </button>
+            <button id="close-chat-btn" type="button" class="btn-close btn-close-white" aria-label="Fechar"></button>
+          </div>
+        </div>
+        <div id="aiChat" class="card-body d-flex flex-column">
+          <div id="aiMessages" class="p-3 bg-light rounded-3 d-flex flex-column flex-grow-1" aria-live="polite" aria-atomic="false"></div>
+          <div class="suggestions mt-2" aria-label="Sugestões rápidas" hidden></div>
+          <div id="aiChatInput" class="input-group mt-3" role="group" aria-label="Entrada de mensagem">
+            <input id="aiInput" type="text" class="form-control" placeholder="Digite sua mensagem e pressione Enter" aria-label="Mensagem para a assistente" />
+            <button id="aiSend" class="btn btn-primary" aria-label="Enviar mensagem">
+              <i class="bi bi-send-fill"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <button id="open-chat-btn" class="btn btn-primary btn-lg rounded-circle shadow-lg" aria-label="Abrir chat de assistência">
+        <i class="bi bi-chat-dots-fill fs-3"></i>
+        <span id="unread-badge" class="badge text-bg-danger" hidden>0</span>
+      </button>
+    </div>
+
+    <!-- Contact modal used by the WebRTC flow -->
+    <div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header align-items-center">
+            <h5 class="modal-title fs-4" id="contactModalLabel">Contato Direto</h5>
+            <div class="mode-bar btn-group ms-auto" role="group">
+              <input type="radio" class="btn-check" name="mode" id="modeVideo" value="video" autocomplete="off" checked />
+              <label class="btn btn-outline-primary" for="modeVideo"><i class="bi bi-camera-video-fill me-2"></i>Vídeo</label>
+              <input type="radio" class="btn-check" name="mode" id="modeChat" value="chat" autocomplete="off" />
+              <label class="btn btn-outline-primary" for="modeChat"><i class="bi bi-chat-dots-fill me-2"></i>Chat</label>
+            </div>
+            <button type="button" class="btn-close ms-2" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+          <div class="modal-body p-4">
+            <div id="callInterface">
+              <div class="row">
+                <div id="video-column" class="col-lg-8 mb-4 mb-lg-0">
+                  <div id="videoContainer" class="row g-2">
+                    <div class="col-12">
+                      <div class="video-box rounded" id="remoteTile">
+                        <video id="remoteVideo" playsinline></video>
+                        <div class="video-placeholder"><i class="bi bi-camera-video-off-fill"></i><p>Vídeo do Advogado</p></div>
+                      </div>
+                    </div>
+                    <div class="col-12">
+                      <div class="video-box rounded" id="localTile">
+                        <video id="localVideo" muted playsinline></video>
+                        <div class="video-placeholder"><i class="bi bi-camera-video-off-fill"></i><p>Sua Câmera</p></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div id="controls-column" class="col-lg-4">
+                  <div class="d-flex flex-column h-100">
+                    <div id="chatContainer" class="d-none flex-grow-1 d-flex flex-column">
+                      <div id="messages" class="p-3 bg-light rounded-3 d-flex flex-column gap-3 flex-grow-1"></div>
+                      <div class="input-group mt-3">
+                        <input id="chatInput" type="text" class="form-control" placeholder="Sua mensagem" />
+                        <button id="sendBtn" class="btn btn-primary" disabled><i class="bi bi-send-fill"></i></button>
+                      </div>
+                      <button id="backBtn" class="btn btn-outline-secondary w-100 mt-2">Voltar para Vídeo</button>
+                    </div>
+                    <div class="actions call-actions d-grid gap-2 mt-auto">
+                      <button class="btn btn-primary btn-lg" id="callBtn"><i class="bi bi-telephone-fill me-2"></i>Ligar Agora</button>
+                      <button class="btn btn-danger btn-lg" id="endBtn" disabled><i class="bi bi-telephone-x-fill me-2"></i>Encerrar</button>
+                      <button class="btn btn-outline-secondary" id="testBtn"><i class="bi bi-gear-fill me-2"></i>Testar Dispositivos</button>
+                    </div>
+                    <div id="info" class="text-center text-muted mt-3">Aguardando...</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.jsx"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script type="module" src="/src/legacy/main.js"></script>
+    <script type="module" src="/src/legacy/client.js"></script>
+    <script type="module" src="/src/legacy/secretary.js"></script>
+    <script type="module" src="/src/legacy/script.js"></script>
+  </body>
 </html>
