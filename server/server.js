@@ -8,6 +8,8 @@ const { Server } = require('socket.io');
 const rateLimit = require('express-rate-limit');
 
 const app = express();
+const distPath = path.join(__dirname, '..', 'dist');
+const publicPath = path.join(__dirname, '..', 'public');
 // Permitir que o Express confie nos cabeçalhos X-Forwarded-* quando estiver atrás de proxies
 // evitando erros do express-rate-limit quando esses cabeçalhos forem adicionados.
 app.set('trust proxy', 1);
@@ -38,7 +40,10 @@ const io = new Server(server, {
 });
 
 // Middleware
-app.use(express.static(path.join(__dirname, '..', 'public')));
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+}
+app.use(express.static(publicPath));
 app.use(express.json());
 const chatLimiter = rateLimit({ windowMs: 60 * 1000, max: 20 });
 
@@ -85,6 +90,18 @@ app.post('/contact', (req, res) => {
   const { nome, email, mensagem } = req.body || {};
   console.log('Contato recebido:', nome, email, mensagem);
   res.sendStatus(200);
+});
+
+app.get('/', (req, res) => {
+  const distIndex = path.join(distPath, 'index.html');
+  if (fs.existsSync(distIndex)) {
+    return res.sendFile(distIndex);
+  }
+  const legacyIndex = path.join(publicPath, 'index.legacy.html');
+  if (fs.existsSync(legacyIndex)) {
+    return res.sendFile(legacyIndex);
+  }
+  res.status(404).send('Build não encontrado. Execute "npm run build" para gerar os arquivos estáticos.');
 });
 
 const PORT = process.env.PORT || 3000;
