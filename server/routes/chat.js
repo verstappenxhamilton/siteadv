@@ -27,7 +27,8 @@ const contactSchema = z.object({
   cpf: z.string(),
 });
 
-module.exports = (sessions, reports, intakes, adminConfig, lawyerSocket) => {
+module.exports = (adminConfig, state) => {
+  const { sessions, reports, intakes, realtime } = state;
   router.post('/chat', async (req, res) => {
     const parsed = messageSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -38,6 +39,7 @@ module.exports = (sessions, reports, intakes, adminConfig, lawyerSocket) => {
       return res.status(400).json({ error: 'msg_too_long' });
     }
     const session = sessions[sessionId] || { count: 0, messages: [], done: false };
+    const intake = intakes[sessionId];
     if (session.done) {
       return res.status(400).json({ error: 'session_closed' });
     }
@@ -62,10 +64,13 @@ module.exports = (sessions, reports, intakes, adminConfig, lawyerSocket) => {
         const reportText = reply.slice(idx + 'RELATORIO:'.length).trim();
         const newReport = { sessionId, text: reportText, timestamp: Date.now() };
         reports.push(newReport);
-        if (lawyerSocket) {
-          lawyerSocket.emit('new-report', newReport);
+        if (realtime.lawyerSocket) {
+          realtime.lawyerSocket.emit('new-report', newReport);
         }
-        intake.stage = 'done';
+        if (intake) {
+          intake.stage = 'done';
+        }
+        session.done = true;
       }
       res.json({ reply: clientReply });
     } catch (e) {
@@ -227,15 +232,18 @@ Exemplo:
           const reportText = reply.slice(idx + 'RELATORIO:'.length).trim();
           const newReport = { sessionId, text: reportText, timestamp: Date.now() };
           reports.push(newReport);
-          if (lawyerSocket) lawyerSocket.emit('new-report', newReport);
+          if (realtime.lawyerSocket) realtime.lawyerSocket.emit('new-report', newReport);
           intake.stage = 'done';
         } else {
           clientReply = "Obrigado por suas respostas. Estamos gerando seu relatório.";
-          const reportText = `Resumo: ${intake.summary}\nRespostas: ${intake.allAnswers.join('\r\n')}`;
+          const reportText = `Resumo: ${intake.summary}\nRespostas: ${(intake.allAnswers || []).join('\r\n')}`;
           const newReport = { sessionId, text: reportText, timestamp: Date.now() };
           reports.push(newReport);
-          if (lawyerSocket) lawyerSocket.emit('new-report', newReport);
+          if (realtime.lawyerSocket) realtime.lawyerSocket.emit('new-report', newReport);
           intake.stage = 'done';
+        }
+        if (sessions[sessionId]) {
+          sessions[sessionId].done = true;
         }
         return res.json({ reply: clientReply, action: "collect_contact_info" });
       }

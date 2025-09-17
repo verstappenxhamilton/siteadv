@@ -4,20 +4,26 @@ const path = require('path');
 
 const router = express.Router();
 
+const contentPath = path.join(__dirname, '..', '..', 'public', 'content.json');
+
 // Endpoints for content management
 router.get('/content', (req, res) => {
-  const contentPath = path.join(__dirname, '..', '..', 'public', 'content.json');
   fs.readFile(contentPath, 'utf8', (err, data) => {
     if (err) {
       console.error('Error reading content.json:', err);
       return res.status(500).json({ error: 'failed_to_read_content' });
     }
-    res.json(JSON.parse(data));
+    try {
+      const parsed = data ? JSON.parse(data) : {};
+      res.json(parsed);
+    } catch (parseError) {
+      console.error('Invalid JSON inside content.json:', parseError);
+      res.status(500).json({ error: 'invalid_content_json' });
+    }
   });
 });
 
 router.post('/content', (req, res) => {
-  const contentPath = path.join(__dirname, '..', 'public', 'content.json');
   const newContent = req.body;
 
   // Basic validation
