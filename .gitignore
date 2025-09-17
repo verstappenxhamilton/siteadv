@@ -1,0 +1,15 @@
+node_modules
+
+# Build output
+/dist
+
+# Local environment files
+.env
+.env.*
+
+# Server data (persisted runtime state)
+server-data/*
+!server-data/.gitignore
+
+# Vite cache
+.vite
