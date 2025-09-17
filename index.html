@@ -1,75 +1,60 @@
+
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Consultas jurídicas online com rapidez e segurança">
-  <title>Advogado Online</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pavan & Associados</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+    body {
+      font-family: 'Lora', serif;
+    }
+    h1, h2, h3, h4, h5, h6, button, a[href="#contact"] {
+      font-family: 'Montserrat', sans-serif;
+    }
+    .ken-burns {
+      animation: ken-burns 20s ease-in-out infinite alternate;
+    }
+    @keyframes ken-burns {
+      from {
+        transform: scale(1);
+      }
+      to {
+        transform: scale(1.1);
+      }
+    }
+    .fade-in-section {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
+    .fade-in-section.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+    "react/": "https://aistudiocdn.com/react@^19.1.1/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
 </head>
-<body>
-  <header>
-    <nav>
-      <ul>
-        <li><a href="#servicos">Serviços</a></li>
-        <li><a href="#sobre">Sobre</a></li>
-        <li><a href="#depoimentos">Depoimentos</a></li>
-        <li><a href="#contato">Contato</a></li>
-      </ul>
-    </nav>
-    <div class="hero">
-      <h1>Atendimento Jurídico Online</h1>
-      <p>Consultas rápidas e seguras sem sair de casa.</p>
-      <a class="cta" href="mailto:contato@advogadoonline.com">Agende sua consulta</a>
-    </div>
-  </header>
-
-  <main>
-    <section id="servicos">
-      <h2>Serviços</h2>
-      <ul>
-        <li>Orientação jurídica por videoconferência</li>
-        <li>Análise de documentos à distância</li>
-        <li>Suporte em processos digitais</li>
-      </ul>
-    </section>
-
-    <section id="sobre">
-      <h2>Sobre mim</h2>
-      <p>Sou um advogado com experiência em direito civil e trabalhista, focado em atender clientes de forma totalmente online, com praticidade e confidencialidade.</p>
-    </section>
-
-    <section id="depoimentos">
-      <h2>Depoimentos</h2>
-      <blockquote class="testimonial">
-        <p>“O atendimento foi rápido e eficiente. Resolvi meu problema sem sair de casa!”</p>
-        <cite>Maria S.</cite>
-      </blockquote>
-      <blockquote class="testimonial">
-        <p>“Profissional atencioso e competente. Recomendo!”</p>
-        <cite>João P.</cite>
-      </blockquote>
-    </section>
-
-    <section id="contato">
-      <h2>Contato</h2>
-      <form action="mailto:contato@advogadoonline.com" method="post" enctype="text/plain">
-        <label for="nome">Nome</label>
-        <input type="text" id="nome" name="nome" required>
-
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" required>
-
-        <label for="mensagem">Mensagem</label>
-        <textarea id="mensagem" name="mensagem" rows="5" required></textarea>
-
-        <button type="submit">Enviar</button>
-      </form>
-    </section>
-  </main>
-
-  <footer>
-    <p>© 2024 Advogado Online</p>
-  </footer>
+<body class="antialiased">
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
 </body>
 </html>
