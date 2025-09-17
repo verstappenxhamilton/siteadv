@@ -24,7 +24,8 @@ const keySchema = z.object({
   gemini: z.string().optional()
 });
 
-module.exports = (adminConfig, reports) => {
+module.exports = (adminConfig, state) => {
+  const { reports } = state;
   router.get('/config', (req, res) => {
     const safe = { ...adminConfig };
     delete safe.apiKeys;

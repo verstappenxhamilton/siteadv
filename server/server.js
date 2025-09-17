@@ -6,6 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const { Server } = require('socket.io');
 const rateLimit = require('express-rate-limit');
+const state = require('./state');
 
 const app = express();
 // Permitir que o Express confie nos cabeçalhos X-Forwarded-* quando estiver atrás de proxies
@@ -37,6 +38,7 @@ const io = new Server(server, {
   cors: { origin: '*' }
 });
 
+
 // Middleware
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use(express.json());
@@ -62,23 +64,17 @@ const adminConfig = {
   }
 };
 
-const sessions = {};
-const reports = [];
-const intakes = {};
-let lawyerSocket = null;
-let busyWithClientId = null;
-
 // Routes
 const contentRoutes = require('./routes/content');
-const chatRoutes = require('./routes/chat')(sessions, reports, intakes, adminConfig, lawyerSocket);
-const adminRoutes = require('./routes/admin')(adminConfig, reports);
+const chatRoutes = require('./routes/chat')(adminConfig, state);
+const adminRoutes = require('./routes/admin')(adminConfig, state);
 
 app.use('/api', contentRoutes);
 app.use('/api', chatLimiter, chatRoutes);
 app.use('/admin', adminRoutes);
 
 // Socket.IO
-require('./socket')(io, sessions, reports, intakes, lawyerSocket, busyWithClientId);
+require('./socket')(io, state);
 
 // Endpoint simples para formulário de contato
 app.post('/contact', (req, res) => {
