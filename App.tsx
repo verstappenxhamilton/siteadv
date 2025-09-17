@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Hero from './components/Hero';
@@ -33,14 +33,17 @@ const MainPage: React.FC = () => {
 };
 
 const App: React.FC = () => {
+  const location = useLocation();
+  const isLawyerRoute = location.pathname.startsWith('/lawyer');
+
   return (
     <div className="bg-white font-sans">
-      <Header />
+      {!isLawyerRoute && <Header />}
       <Routes>
         <Route path="/" element={<MainPage />} />
         <Route path="/lawyer" element={<LawyerPage />} />
       </Routes>
-      <Footer />
+      {!isLawyerRoute && <Footer />}
     </div>
   );
 };
