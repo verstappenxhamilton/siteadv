@@ -1,0 +1,15 @@
+Faça um componente na tela do advogado, em que se possa editar
+os itens 
+
+
+Defendendo seus direitos com excelência
+Atendimento jurídico moderno, humano e eficiente.
+atribuir um link do whats app ou outro a "Fale agora"
+
+Sobre
+Atuamos com dedicação e transparência para garantir a melhor defesa dos seus interesses. Utilizamos tecnologia de ponta para agilizar seu atendimento.
+
+
+Áreas de Atuação -> usuário poderá selecionar a quantidade de itens que colocará, bem como o titulo e o icone que irá no modal (faça um seletor com varios icones)
+
+e o footer, com opções pra adicionar link nas redes sociais e alterar o texto do footer

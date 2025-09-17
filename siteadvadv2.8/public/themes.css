@@ -1,0 +1,330 @@
+/*
+  Temas visuais por classe no <body>:
+  - theme-a: Minimal Light (neutro e claro)
+  - theme-b: Corporate Blue (elegante)
+  - theme-c: Warm Earth (quente/acolhedor)
+  - theme-d: Dark Pro (escuro acessível)
+  Mantém rótulos/fluxos. Somente UI. 
+*/
+
+/* Base: reforça foco acessível em todos os temas */
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--focus, #22D3EE);
+  outline-offset: 2px;
+}
+
+/* Seletor de tema (página do advogado) */
+select.theme-picker { padding: 8px 10px; border-radius: 8px; }
+.theme-a select.theme-picker { background:#FFFFFF; color:#0F172A; border:1px solid #CBD5E1; }
+.theme-b select.theme-picker { background:#FFFFFF; color:#1B2430; border:1px solid #D6DBE1; }
+.theme-c select.theme-picker { background:#FFFFFF; color:#1E1B16; border:1px solid #E7E2DC; }
+.theme-d select.theme-picker { background:#0F172A; color:#F3F4F6; border:1px solid rgba(148,163,184,0.4); }
+.theme-e select.theme-picker { background:#FFFFFF; color:#065F46; border:1px solid #A7F3D0; }
+.theme-f select.theme-picker { background:#292524; color:#FAFAF9; border:1px solid #57534E; }
+.theme-g select.theme-picker { background:#FFFFFF; color:#78350F; border:1px solid #FDE68A; }
+
+/* =========================================
+   Tema A — Minimal Light
+   ========================================= */
+.theme-a {
+  --bg: #F8FAFC;
+  --panel: #FFFFFF;
+  --text: #0F172A;
+  --muted: #475569;
+  --accent: #2563EB;
+  --accent-2: #DC2626;
+  --focus: #7DD3FC;
+}
+body.theme-a {
+  background: #F8FAFC;
+  color: var(--text);
+}
+body.theme-a::before {
+  background: radial-gradient(circle at var(--bg-x) var(--bg-y), rgba(37, 99, 235, 0.15), transparent 60%);
+}
+.theme-a .site-header {
+  background: rgba(255,255,255,0.9);
+  border-bottom: 1px solid #E2E8F0;
+}
+.theme-a .nav-links a { color: #0F172A; }
+.theme-a .nav-links a:hover { color: var(--accent); }
+.theme-a .panel {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  backdrop-filter: none;
+  padding: 20px;
+}
+.theme-a .videos { grid-template-columns: 1fr 1fr; gap: 12px; }
+.theme-a .contact-panel { grid-template-columns: 1.2fr 1fr; }
+.theme-a .hero-section {
+  background: linear-gradient(135deg, #F8FAFC 0%, #EEF2F6 100%);
+}
+.theme-a .area-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+.theme-a .container { max-width: 1120px; }
+.theme-a h2 { color: #0F172A; }
+.theme-a .contact-form input,
+.theme-a .contact-form textarea,
+.theme-a .chat-input input,
+.theme-a .form-grid input,
+.theme-a .form-grid select,
+.theme-a .form-grid textarea {
+  background: #FFFFFF;
+  color: #0F172A;
+  border-color: #CBD5E1;
+}
+.theme-a .chat-messages {
+  background: #F1F5F9;
+  border-color: #E2E8F0;
+}
+.theme-a .chat-message-assistant,
+.theme-a .chat-messages .msg.assistant,
+.theme-a .chat-messages .msg.client { background: #EBF0FF; border-left-color: var(--accent); color: #0F172A; }
+.theme-a .chat-message-user,
+.theme-a .chat-messages .msg.user,
+.theme-a .chat-messages .msg.you { background: var(--accent); color: #FFFFFF; }
+.theme-a .chat-messages .msg.ai { background: #EBF0FF; color: #1e293b; border-left-color: var(--accent); }
+.theme-a .video-box { background: #F1F5F9; border-color: #E2E8F0; }
+.theme-a .badge { background: #E2E8F0; color: #334155; }
+.theme-a .badge.online { background: #DCFCE7; color: #14532D; }
+.theme-a .site-footer { background: #FFFFFF; color: #475569; border-top: 1px solid #E2E8F0; }
+.theme-a .site-footer .social-links a { color: #64748B; }
+.theme-a .site-footer .social-links a:hover { color: var(--accent); }
+.theme-a #contentEditor { background: #FFFFFF; border-color: #E2E8F0; }
+.theme-a #contentForm fieldset { background: #F8FAFC; border-color: #E2E8F0; }
+.theme-a #contentForm legend { color: var(--accent); }
+.theme-a #contentForm input, .theme-a #contentForm textarea { background: #FFFFFF; border-color: #CBD5E1; color: var(--text); }
+
+/* =========================================
+   Tema B — Corporate Blue
+   ========================================= */
+.theme-b {
+  --bg: #F1F5FB;
+  --panel: #FFFFFF;
+  --text: #1B2430;
+  --muted: #5B6676;
+  --accent: #0A66C2;
+  --accent-2: #C0392B;
+  --focus: #00B5FF;
+}
+body.theme-b { background: #F1F5FB; color: var(--text); }
+body.theme-b::before { background: radial-gradient(circle at var(--bg-x) var(--bg-y), rgba(10,102,194,0.16), transparent 60%); }
+.theme-b .site-header { background: linear-gradient(0deg, rgba(10,102,194,0.06), rgba(10,102,194,0.06)), #FFFFFF; border-bottom: 1px solid #D0D8E5; }
+.theme-b .nav-links a { color: #102033; }
+.theme-b .nav-links a:hover { color: var(--accent); }
+.theme-b .panel { background:#FFFFFF; border:1px solid #D0D8E5; box-shadow: 0 2px 8px rgba(16,32,51,0.06); padding: 20px; }
+.theme-b .hero-section { background: linear-gradient(135deg, #E8F1FB 0%, #FFFFFF 100%); }
+.theme-b .area-card { background:#FFFFFF; border:1px solid #D6DBE1; box-shadow: 0 1px 3px rgba(10,102,194,0.08); }
+.theme-b .container { max-width: 1200px; }
+.theme-b h2 { color: #1B2430; }
+.theme-b .videos { grid-template-columns: 1.4fr 1fr; gap: 16px; }
+.theme-b .contact-panel { grid-template-columns: 1fr 1fr; }
+.theme-b .contact-form input,
+.theme-b .contact-form textarea,
+.theme-b .chat-input input,
+.theme-b .form-grid input,
+.theme-b .form-grid select,
+.theme-b .form-grid textarea { background:#FFFFFF; color:#1B2430; border-color:#D6DBE1; }
+.theme-b .chat-messages { background:#F1F5FB; border-color:#D6DBE1; }
+.theme-b .chat-message-assistant,
+.theme-b .chat-messages .msg.assistant,
+.theme-b .chat-messages .msg.client { background:#E0EFFF; border-left-color: var(--accent); color:#1B2430; }
+.theme-b .chat-message-user,
+.theme-b .chat-messages .msg.user,
+.theme-b .chat-messages .msg.you { background:var(--accent); color:#FFFFFF; }
+.theme-b .chat-messages .msg.ai { background: #E0EFFF; color: #1b2430; border-left-color: var(--accent); }
+.theme-b .video-box { background:#EEF2F6; border-color:#D6DBE1; }
+.theme-b .badge { background:#E1E6EC; color:#2C3E50; }
+.theme-b .site-footer { background:#FFFFFF; color:#5B6676; border-top:1px solid #D6DBE1; }
+.theme-b #contentEditor { background: #FFFFFF; border-color: #D0D8E5; }
+.theme-b #contentForm fieldset { background: #F1F5FB; border-color: #D0D8E5; }
+.theme-b #contentForm legend { color: var(--accent); }
+.theme-b #contentForm input, .theme-b #contentForm textarea { background: #FFFFFF; border-color: #D6DBE1; color: var(--text); }
+
+/* =========================================
+   Tema C — Warm Earth
+   ========================================= */
+.theme-c {
+  --bg: #FAFAF8;
+  --panel: #FFFFFF;
+  --text: #1E1B16;
+  --muted: #5F5143;
+  --accent: #8B5E3C;
+  --accent-2: #9B2C2C;
+  --focus: #F2C38B;
+}
+body.theme-c { background:#FAFAF8; color:var(--text); }
+body.theme-c::before { background: radial-gradient(circle at var(--bg-x) var(--bg-y), rgba(139,94,60,0.12), transparent 60%); }
+.theme-c .site-header { background: rgba(255,255,255,0.95); border-bottom:1px solid #E7E2DC; }
+.theme-c .nav-links a { color:#1E1B16; }
+.theme-c .panel { background:#FFFFFF; border:1px solid #E7E2DC; box-shadow: 0 1px 2px rgba(60,40,20,0.08); border-radius:10px; padding: 20px; }
+.theme-c .hero-section { background: linear-gradient(135deg, #FAFAF8 0%, #F7F4F0 100%); }
+.theme-c .area-card { background:#FFFFFF; border:1px solid #E7E2DC; }
+.theme-c .container { max-width: 1080px; }
+.theme-c h2 { color: #1E1B16; }
+.theme-c .videos { grid-template-columns: 1fr 1fr; gap: 16px; }
+.theme-c .contact-panel { grid-template-columns: 1fr 1fr; }
+.theme-c .contact-form input,
+.theme-c .contact-form textarea,
+.theme-c .chat-input input,
+.theme-c .form-grid input,
+.theme-c .form-grid select,
+.theme-c .form-grid textarea { background:#FFFFFF; color:#1E1B16; border-color:#E7E2DC; }
+.theme-c .chat-messages { background:#FDFBF8; border-color:#E7E2DC; }
+.theme-c .chat-message-assistant,
+.theme-c .chat-messages .msg.assistant,
+.theme-c .chat-messages .msg.client { background:#F7F4F0; border-left-color: var(--accent); color:#1E1B16; }
+.theme-c .chat-message-user,
+.theme-c .chat-messages .msg.user,
+.theme-c .chat-messages .msg.you { background:var(--accent); color:#FFFFFF; }
+.theme-c .chat-messages .msg.ai { background: #F7F4F0; color: #1e1b16; border-left-color: var(--accent); }
+.theme-c .video-box { background:#F7F4F0; border-color:#E7E2DC; }
+.theme-c .badge { background:#EFEAE4; color:#4F3E31; }
+.theme-c .site-footer { background:#FFFFFF; color:#5F5143; border-top:1px solid #E7E2DC; }
+.theme-c #contentEditor { background: #FFFFFF; border-color: #E7E2DC; }
+.theme-c #contentForm fieldset { background: #FAFAF8; border-color: #E7E2DC; }
+.theme-c #contentForm legend { color: var(--accent); }
+.theme-c #contentForm input, .theme-c #contentForm textarea { background: #FFFFFF; border-color: #E7E2DC; color: var(--text); }
+
+/* =========================================
+   Tema D — Dark Pro
+   ========================================= */
+.theme-d {
+  --bg: #0B1220;
+  --panel: #111827;
+  --text: #F3F4F6;
+  --muted: #CBD5E1;
+  --accent: #60A5FA;
+  --accent-2: #F87171;
+  --focus: #22D3EE;
+}
+body.theme-d { background: linear-gradient(120deg, #0f172a 0%, #0b1224 100%); color: var(--text); }
+body.theme-d::before { background: radial-gradient(circle at var(--bg-x) var(--bg-y), rgba(96,165,250,0.18), transparent 60%); }
+.theme-d .site-header { background: rgba(15, 23, 42, 0.85); border-bottom: 1px solid rgba(148, 163, 184, 0.1); }
+.theme-d .panel { background: rgba(17, 24, 39, 0.75); border: 1px solid rgba(148, 163, 184, 0.15); padding: 16px; }
+.theme-d .container { max-width: 1100px; }
+.theme-d .hero-section { background: linear-gradient(135deg, #0b1224 0%, #141e31 100%); }
+.theme-d .videos { grid-template-columns: 1fr 1fr; gap: 12px; }
+.theme-d .contact-panel { grid-template-columns: 1fr 1fr; }
+
+/* =========================================
+   Tema E — Oceanic
+   ========================================= */
+.theme-e {
+  --bg: #E0F7FA; /* Light Cyan */
+  --panel: #FFFFFF; /* White */
+  --text: #006064; /* Dark Cyan */
+  --muted: #4DD0E1; /* Light Blue-Cyan */
+  --accent: #00BCD4; /* Cyan */
+  --accent-2: #FF5252; /* Red (for errors/alerts) */
+  --focus: #80DEEA; /* Lighter Cyan */
+}
+body.theme-e { background: var(--bg); color: var(--text); }
+body.theme-e::before { background: radial-gradient(circle at var(--bg-x) var(--bg-y), rgba(4, 120, 87, 0.15), transparent 60%); }
+.theme-e .site-header { background: rgba(224, 247, 250, 0.9); border-bottom: 1px solid rgba(0, 188, 212, 0.3); }
+.theme-e .nav-links a { color: var(--text); }
+.theme-e .panel { background: var(--panel); border: 1px solid #CCFBF1; box-shadow: 0 1px 2px rgba(0,0,0,0.06); padding: 20px; }
+.theme-e .area-card { background: var(--panel); border: 1px solid #CCFBF1; }
+.theme-e h2 { color: var(--text); }
+.theme-e .contact-form input,
+.theme-e .contact-form textarea,
+.theme-e .chat-input input,
+.theme-e .form-grid input,
+.theme-e .form-grid select,
+.theme-e .form-grid textarea { background: var(--panel); color: var(--text); border-color: #A7F3D0; }
+.theme-e .chat-messages { background: #ECFDF5; border-color: #CCFBF1; }
+.theme-e .chat-message-assistant,
+.theme-e .chat-messages .msg.assistant,
+.theme-e .chat-messages .msg.client { background: #D1FAE5; border-left-color: var(--accent); color: var(--text); }
+.theme-e .chat-message-user,
+.theme-e .chat-messages .msg.user,
+.theme-e .chat-messages .msg.you { background: var(--accent); color: #FFFFFF; }
+.theme-e .chat-messages .msg.ai { background: #D1FAE5; color: var(--text); border-left-color: var(--accent); }
+.theme-e .video-box { background: #F0FDFA; border-color: #CCFBF1; }
+.theme-e .badge { background: #D1FAE5; color: #065F46; }
+.theme-e .site-footer { background: var(--panel); color: var(--muted); border-top: 1px solid #CCFBF1; }
+.theme-e #contentEditor { background: #FFFFFF; border-color: #CCFBF1; }
+.theme-e #contentForm fieldset { background: #F0FDFA; border-color: #CCFBF1; }
+.theme-e #contentForm legend { color: var(--accent); }
+.theme-e #contentForm input, .theme-e #contentForm textarea { background: #FFFFFF; border-color: #A7F3D0; color: var(--text); }
+
+/* =========================================
+   Tema F — Crimson
+   ========================================= */
+.theme-f {
+  --bg: #1C1917;
+  --panel: #292524;
+  --text: #FAFAF9;
+  --muted: #A8A29E;
+  --accent: #FB923C;
+  --accent-2: #4ADE80;
+  --focus: #FBCFE8;
+}
+body.theme-f { background: var(--bg); color: var(--text); }
+body.theme-f::before { background: radial-gradient(circle at var(--bg-x) var(--bg-y), rgba(251, 146, 60, 0.15), transparent 60%); }
+.theme-f .site-header { background: rgba(28, 25, 23, 0.85); border-bottom: 1px solid #44403C; }
+.theme-f .nav-links a { color: var(--text); }
+.theme-f .panel { background: var(--panel); border: 1px solid #44403C; padding: 16px; }
+.theme-f .area-card { background: var(--panel); border: 1px solid #44403C; }
+.theme-f h2 { color: var(--text); }
+.theme-f .contact-form input,
+.theme-f .contact-form textarea,
+.theme-f .chat-input input,
+.theme-f .form-grid input,
+.theme-f .form-grid select,
+.theme-f .form-grid textarea { background: #1C1917; color: var(--text); border-color: #57534E; }
+.theme-f .chat-messages { background: #1C1917; border-color: #44403C; }
+.theme-f .chat-message-assistant,
+.theme-f .chat-messages .msg.assistant,
+.theme-f .chat-messages .msg.client { background: #44403C; border-left-color: var(--accent); color: var(--text); }
+.theme-f .chat-message-user,
+.theme-f .chat-messages .msg.user,
+.theme-f .chat-messages .msg.you { background: var(--accent); color: #1C1917; }
+.theme-f .chat-messages .msg.ai { background: #44403C; color: var(--text); border-left-color: var(--accent); }
+.theme-f .video-box { background: #1C1917; border-color: #44403C; }
+.theme-f .badge { background: #44403C; color: #E7E5E4; }
+.theme-f .site-footer { background: var(--panel); color: var(--muted); border-top: 1px solid #44403C; }
+
+/* =========================================
+   Tema G — Royal
+   ========================================= */
+.theme-g {
+  --bg: #21003D; /* Deep Purple */
+  --panel: #3A006B; /* Darker Purple */
+  --text: #E0BBE4; /* Light Purple */
+  --muted: #957DAD; /* Muted Purple */
+  --accent: #FFD700; /* Gold */
+  --accent-2: #FF6F61; /* Coral (for errors/alerts) */
+  --focus: #DAA520; /* Goldenrod */
+}
+body.theme-g { background: var(--bg); color: var(--text); }
+body.theme-g::before { background: radial-gradient(circle at var(--bg-x) var(--bg-y), rgba(217, 119, 6, 0.15), transparent 60%); }
+.theme-g .site-header { background: rgba(58, 0, 107, 0.85); border-bottom: 1px solid rgba(255, 215, 0, 0.3); }
+.theme-g .nav-links a { color: var(--text); }
+.theme-g .panel { background: var(--panel); border: 1px solid #FEF3C7; box-shadow: 0 1px 2px rgba(0,0,0,0.06); padding: 20px; }
+.theme-g .area-card { background: var(--panel); border: 1px solid #FEF3C7; }
+.theme-g h2 { color: var(--text); }
+.theme-g .contact-form input,
+.theme-g .contact-form textarea,
+.theme-g .chat-input input,
+.theme-g .form-grid input,
+.theme-g .form-grid select,
+.theme-g .form-grid textarea { background: var(--panel); color: var(--text); border-color: #FDE68A; }
+.theme-g .chat-messages { background: #FEFDF5; border-color: #FEF3C7; }
+.theme-g .chat-message-assistant,
+.theme-g .chat-messages .msg.assistant,
+.theme-g .chat-messages .msg.client { background: #FEF9C3; border-left-color: var(--accent); color: var(--text); }
+.theme-g .chat-message-user,
+.theme-g .chat-messages .msg.user,
+.theme-g .chat-messages .msg.you { background: var(--accent); color: #FFFFFF; }
+.theme-g .chat-messages .msg.ai { background: #FEF9C3; color: var(--text); border-left-color: var(--accent); }
+.theme-g .video-box { background: #FFFBEB; border-color: #FEF3C7; }
+.theme-g .badge { background: #FEF9C3; color: #78350F; }
+.theme-g .site-footer { background: var(--panel); color: var(--muted); border-top: 1px solid #FEF3C7; }
+.theme-g #contentEditor { background: #FFFFFF; border-color: #FEF3C7; }
+.theme-g #contentForm fieldset { background: #FFFBEB; border-color: #FEF3C7; }
+.theme-g #contentForm legend { color: var(--accent); }
+.theme-g #contentForm input, .theme-g #contentForm textarea { background: #FFFFFF; border-color: #FDE68A; color: var(--text); }
