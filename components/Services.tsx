@@ -6,15 +6,15 @@ interface ServiceCardProps {
 }
 
 const ServiceCard: React.FC<ServiceCardProps> = ({ title, services }) => (
-  <article className="flex h-full flex-col rounded-xl border border-gray-200/70 bg-white/95 p-8 shadow-sm transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg">
-    <header className="border-b border-gray-200 pb-4">
-      <h3 className="text-2xl font-semibold text-[#0D1B2A]">{title}</h3>
+  <article className="home-services__card">
+    <header className="home-services__card-header">
+      <h3 className="home-services__card-title">{title}</h3>
     </header>
-    <ul className="mt-6 space-y-3 text-gray-600">
+    <ul className="home-services__list">
       {services.map((service, index) => (
-        <li key={index} className="flex items-start gap-3">
-          <span className="mt-2 inline-flex h-2.5 w-2.5 flex-shrink-0 rounded-full bg-[#B98F58]" aria-hidden="true"></span>
-          <span className="leading-relaxed">{service}</span>
+        <li key={index} className="home-services__item">
+          <span className="home-services__bullet" aria-hidden="true" />
+          <span className="home-services__item-text">{service}</span>
         </li>
       ))}
     </ul>
@@ -54,14 +54,16 @@ const Services: React.FC = () => {
   ];
 
   return (
-    <section id="services" className="bg-gray-50 py-20 fade-in-section">
-      <div className="container mx-auto px-6">
-        <div className="mb-16 text-center">
-          <h2 className="text-4xl font-bold uppercase tracking-wide text-gray-800">Nossas Áreas de Atuação</h2>
-          <div className="mx-auto mt-4 h-1 w-20 bg-[#B98F58]"></div>
-          <p className="mt-4 text-lg text-gray-600">Oferecemos consultoria especializada para proteger e valorizar o seu patrimônio.</p>
+    <section id="services" className="home-services fade-in-section">
+      <div className="container">
+        <div className="home-section-heading">
+          <span className="home-section-heading__eyebrow">expertise jurídica</span>
+          <h2 className="home-section-heading__title">Nossas áreas de atuação</h2>
+          <p className="home-section-heading__description">
+            Oferecemos consultoria especializada para proteger e valorizar o seu patrimônio com segurança e precisão técnica.
+          </p>
         </div>
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
+        <div className="home-services__grid">
           {servicesData.map((service, index) => (
             <ServiceCard key={index} {...service} />
           ))}

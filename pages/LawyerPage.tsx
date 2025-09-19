@@ -27,6 +27,19 @@ type ReportItem = {
   text?: string;
 };
 
+type ThemeOption = "classic" | "aurora";
+
+const THEME_OPTIONS: { value: ThemeOption; label: string; description: string }[] = [
+  { value: "classic", label: "Clássico", description: "Tema tradicional do painel" },
+  {
+    value: "aurora",
+    label: "Aurora",
+    description: "Tema clean com visual translúcido e moderno",
+  },
+];
+
+const THEME_STORAGE_KEY = "lawyer-dashboard-theme";
+
 const PROVIDER_MODELS: Record<AiProvider, string> = {
   openai: "gpt-4o-mini",
   anthropic: "claude-3-haiku-20240307",
@@ -68,6 +81,15 @@ const LawyerPage: React.FC = () => {
   const [keysStatus, setKeysStatus] = useState("");
   const [isLoadingReports, setIsLoadingReports] = useState(false);
   const [reportError, setReportError] = useState("");
+  const [theme, setTheme] = useState<ThemeOption>(() => {
+    if (typeof window !== "undefined") {
+      const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
+      if (storedTheme === "classic" || storedTheme === "aurora") {
+        return storedTheme;
+      }
+    }
+    return "classic";
+  });
 
   const formattedReports = useMemo(
     () => [...reports].sort((a, b) => (b.timestamp ?? 0) - (a.timestamp ?? 0)),
@@ -134,6 +156,21 @@ const LawyerPage: React.FC = () => {
     loadKeys();
     loadReports();
   }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+    }
+  }, [theme]);
+
+  const handleThemeSelect = (value: ThemeOption) => {
+    setTheme((current) => (current === value ? current : value));
+  };
+
+  const isAuroraTheme = theme === "aurora";
+  const headerLinkBaseClass = "theme-switcher-link d-flex align-items-center gap-2";
+  const headerLinkClass = `${isAuroraTheme ? "btn btn-primary" : "btn btn-outline-light"} ${headerLinkBaseClass}`;
+  const rootClassName = `lawyer-page theme-${theme}`;
 
   const handleConfigChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = event.target;
@@ -224,14 +261,47 @@ const LawyerPage: React.FC = () => {
   };
 
   return (
-    <div className="lawyer-page">
-      <header className="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
-        <div className="container">
-          <span className="navbar-brand fw-bold fs-4">Painel do Advogado</span>
-          <span className="badge bg-success">Voce esta online</span>
-          <Link to="/" className="btn btn-outline-light ms-auto">
-            Ver Pagina do Cliente
-          </Link>
+    <div className={rootClassName}>
+      <header
+        className={`lawyer-navbar navbar navbar-expand-lg shadow-sm ${
+          isAuroraTheme ? "navbar-light" : "navbar-dark"
+        }`}
+      >
+        <div className="container py-3">
+          <div className="d-flex flex-wrap align-items-center gap-3 w-100">
+            <div className="d-flex align-items-center gap-3 flex-grow-1 min-width-0">
+              <span className="navbar-brand fw-bold fs-4 mb-0 text-truncate">Painel do Advogado</span>
+              <span className="status-indicator rounded-pill">Você está online</span>
+            </div>
+            <div className="d-flex align-items-center gap-3 ms-auto flex-wrap justify-content-end theme-controls">
+              <div className="theme-switcher" role="group" aria-label="Seleção de tema">
+                <span className="theme-switcher-label d-flex align-items-center gap-2 text-uppercase">
+                  <i className="bi bi-stars" aria-hidden="true" />
+                  Tema
+                </span>
+                <div className="theme-switcher-options">
+                  {THEME_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className={`theme-chip ${theme === option.value ? "active" : ""}`}
+                      data-theme={option.value}
+                      onClick={() => handleThemeSelect(option.value)}
+                      aria-pressed={theme === option.value}
+                      title={option.description}
+                    >
+                      <span className="theme-chip-swatch" aria-hidden="true" />
+                      <span className="theme-chip-label">{option.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <Link to="/" className={headerLinkClass}>
+                <i className="bi bi-box-arrow-up-right" aria-hidden="true" />
+                Ver Página do Cliente
+              </Link>
+            </div>
+          </div>
         </div>
       </header>
 
