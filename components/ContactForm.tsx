@@ -34,7 +34,7 @@ const ContactForm: React.FC = () => {
                         value={formData.name}
                         onChange={handleChange}
                         placeholder="Nome"
-                        className="w-full p-3 bg-gray-800 border border-gray-600 text-white rounded-sm focus:outline-none focus:ring-2 focus:ring-[#B98F58] transition-colors"
+                        className="w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/60 shadow-inner focus:outline-none focus:ring-2 focus:ring-[#B98F58] focus:ring-offset-2 focus:ring-offset-transparent transition"
                         required
                     />
                 </div>
@@ -47,7 +47,7 @@ const ContactForm: React.FC = () => {
                         value={formData.email}
                         onChange={handleChange}
                         placeholder="Email"
-                        className="w-full p-3 bg-gray-800 border border-gray-600 text-white rounded-sm focus:outline-none focus:ring-2 focus:ring-[#B98F58] transition-colors"
+                        className="w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/60 shadow-inner focus:outline-none focus:ring-2 focus:ring-[#B98F58] focus:ring-offset-2 focus:ring-offset-transparent transition"
                         required
                     />
                 </div>
@@ -61,7 +61,7 @@ const ContactForm: React.FC = () => {
                     value={formData.phone}
                     onChange={handleChange}
                     placeholder="Telefone (Opcional)"
-                    className="w-full p-3 bg-gray-800 border border-gray-600 text-white rounded-sm focus:outline-none focus:ring-2 focus:ring-[#B98F58] transition-colors"
+                    className="w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/60 shadow-inner focus:outline-none focus:ring-2 focus:ring-[#B98F58] focus:ring-offset-2 focus:ring-offset-transparent transition"
                 />
             </div>
             <div>
@@ -73,13 +73,13 @@ const ContactForm: React.FC = () => {
                     onChange={handleChange}
                     placeholder="Mensagem"
                     rows={4}
-                    className="w-full p-3 bg-gray-800 border border-gray-600 text-white rounded-sm focus:outline-none focus:ring-2 focus:ring-[#B98F58] transition-colors"
+                    className="w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/60 shadow-inner focus:outline-none focus:ring-2 focus:ring-[#B98F58] focus:ring-offset-2 focus:ring-offset-transparent transition"
                     required
                 ></textarea>
             </div>
             <button
                 type="submit"
-                className="w-full sm:w-auto px-8 py-3 bg-[#B98F58] text-white font-bold uppercase rounded-sm hover:bg-[#a37d4b] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-[#B98F58]"
+                className="w-full rounded-full bg-[#B98F58] px-10 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white shadow-[0_18px_32px_rgba(185,143,88,0.45)] transition-transform duration-300 hover:-translate-y-0.5 hover:bg-[#a37d4b] focus:outline-none focus:ring-2 focus:ring-[#B98F58] focus:ring-offset-2 focus:ring-offset-[#0D1B2A]/40 sm:w-auto"
             >
                 Enviar Mensagem
             </button>
