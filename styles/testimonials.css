@@ -1,27 +1,37 @@
-.video-transition {
-  transition: opacity 1s ease-in-out;
-}
-
-.dotted-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.2) 1px, transparent 1px);
-  background-size: 3px 3px;
-}
-
-.gradient-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 20%;
-  background: linear-gradient(to top, transparent, rgba(0, 0, 0, 0.7));
-}
-
 #testimonials .mySwiper {
-  padding-top: 20px;
-  padding-bottom: 40px;
+  max-width: 960px;
+  margin: 4rem auto 0;
+  padding: 20px 0 60px;
+}
+
+#testimonials .swiper-button-next,
+#testimonials .swiper-button-prev {
+  color: #b98f58;
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+#testimonials .swiper-button-next:hover,
+#testimonials .swiper-button-prev:hover {
+  transform: translateY(-2px);
+  color: #8e6f42;
+}
+
+#testimonials .swiper-pagination-bullet {
+  background: rgba(13, 27, 42, 0.2);
+  opacity: 1;
+}
+
+#testimonials .swiper-pagination-bullet-active {
+  background: #b98f58;
+}
+
+@media (max-width: 768px) {
+  #testimonials .mySwiper {
+    padding-bottom: 50px;
+  }
+
+  #testimonials .swiper-button-next,
+  #testimonials .swiper-button-prev {
+    display: none;
+  }
 }

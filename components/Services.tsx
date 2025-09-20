@@ -1,5 +1,5 @@
 import React from "react";
-import { BriefcaseIcon, HomeIcon, UsersIcon } from "./icons/UiIcons";
+import { HomeIcon, UsersIcon } from "./icons/UiIcons";
 
 interface ServiceCardProps {
   icon: React.ReactNode;
@@ -8,20 +8,34 @@ interface ServiceCardProps {
 }
 
 const ServiceCard: React.FC<ServiceCardProps> = ({ icon, title, services }) => (
-  <div className="group relative transform transition-transform duration-300 hover:-translate-y-2">
-    <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-[#B98F58]/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
-    <div className="relative flex h-full flex-col rounded-xl border border-gray-200/70 bg-white/95 p-8 shadow-sm">
-      <div className="flex flex-col items-center text-center">
-        <div className="mb-4 text-[#B98F58] transition-colors duration-300 group-hover:text-[#0D1B2A]">
+  <div className="group relative overflow-hidden rounded-3xl border border-gray-200/70 bg-white/95 p-10 shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-xl">
+    <div className="absolute inset-0 bg-gradient-to-br from-[#B98F58]/0 via-[#B98F58]/10 to-[#B98F58]/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+    <div className="relative flex h-full flex-col">
+      <div className="flex items-center gap-5 text-left">
+        <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-[#0D1B2A]/5 text-[#B98F58]">
           {icon}
         </div>
         <h3 className="text-xl font-semibold text-[#0D1B2A]">{title}</h3>
       </div>
-      <ul className="mt-3 text-gray-600 list-disc list-inside text-left">
+      <ul className="mt-6 space-y-3 text-sm leading-relaxed text-gray-600">
         {services.map((service, index) => (
-          <li key={index}>{service}</li>
+          <li key={index} className="flex items-start gap-3">
+            <span className="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#B98F58]/15 text-[#B98F58]">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                <path
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 00-1.414 0L8.5 12.086 5.707 9.293a1 1 0 00-1.414 1.414l3.5 3.5a1 1 0 001.414 0l7-7a1 1 0 000-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </span>
+            <span>{service}</span>
+          </li>
         ))}
       </ul>
+      <div className="mt-8 rounded-2xl border border-[#0D1B2A]/10 bg-[#0D1B2A]/5 p-4 text-xs uppercase tracking-widest text-[#0D1B2A]/60">
+        Consultoria completa do diagnóstico ao pós-atendimento.
+      </div>
     </div>
   </div>
 );
@@ -61,19 +75,41 @@ const Services: React.FC = () => {
   ];
 
   return (
-    <section id="services" className="bg-gray-50 py-24 fade-in-section">
-      <div className="container mx-auto px-6">
-        <div className="mb-16 text-center">
-          <h2 className="text-4xl font-bold uppercase tracking-wider text-gray-800">Nossas Áreas de Atuação</h2>
-          <div className="mx-auto mt-4 h-1 w-24 rounded-full bg-[#B98F58]"></div>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-600">
-            Oferecemos soluções jurídicas especializadas para proteger e valorizar o que é mais importante para você.
+    <section id="services" className="relative overflow-hidden bg-gray-50 py-24 fade-in-section">
+      <div
+        className="pointer-events-none absolute inset-0 opacity-80"
+        aria-hidden="true"
+        style={{ backgroundImage: 'radial-gradient(circle at 10% 20%, rgba(185,143,88,0.12), transparent 55%)' }}
+      ></div>
+      <div className="relative container mx-auto px-6">
+        <div className="text-center">
+          <span className="inline-flex items-center justify-center gap-2 rounded-full border border-[#B98F58]/40 bg-[#B98F58]/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.35em] text-[#0D1B2A]">
+            Especialidades
+          </span>
+          <h2 className="mt-6 text-4xl font-bold tracking-tight text-[#0D1B2A]">Nossas áreas de atuação</h2>
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600">
+            Soluções personalizadas para resguardar seus ativos, simplificar negociações complexas e acelerar regularizações imobiliárias.
           </p>
         </div>
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-2">
+        <div className="mt-14 grid grid-cols-1 gap-8 md:grid-cols-2">
           {servicesData.map((service, index) => (
             <ServiceCard key={index} {...service} />
           ))}
+        </div>
+        <div className="mt-12 flex flex-col items-center justify-between gap-6 rounded-3xl border border-[#0D1B2A]/10 bg-white/70 px-6 py-8 text-center md:flex-row md:text-left">
+          <div className="max-w-2xl text-[#0D1B2A]">
+            <h3 className="text-2xl font-semibold">Não encontrou exatamente o que precisa?</h3>
+            <p className="mt-2 text-sm text-[#0D1B2A]/70">
+              Atuamos também com due diligence, disputas condominiais, regularização fundiária e consultoria preventiva para investidores.
+            </p>
+          </div>
+          <a
+            href="#contact"
+            className="inline-flex items-center gap-3 rounded-full border border-[#B98F58]/60 bg-[#B98F58] px-8 py-3 text-xs font-semibold uppercase tracking-[0.35em] text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#a37d4b]"
+          >
+            <span className="inline-block h-2 w-2 rounded-full bg-white" aria-hidden="true"></span>
+            Fale com um especialista
+          </a>
         </div>
       </div>
     </section>
